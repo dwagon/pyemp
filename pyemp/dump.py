@@ -20,7 +20,7 @@ def dump(sock: emp_sock) -> MapData:
     data = MapData()
     msg = sock.send("dump #")
     # First three lines are header info
-    for line in msg[3:-2]:
+    for line in msg[3:-1]:
         bits = line.split()
         s = Sector(
             x=int(bits[0]),

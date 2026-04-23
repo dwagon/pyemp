@@ -37,7 +37,7 @@ class Sector:
     pet: int
     iron: int
     dust: int
-    bar: int
+    bar: int  # pylint: disable=disallowed-name
     oil: int
     lcm: int
     hcm: int

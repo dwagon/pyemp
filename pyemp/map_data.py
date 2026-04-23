@@ -35,11 +35,34 @@ class MapData:
             max_y = max(max_y, y)
         return (min_x, min_y), (max_x, max_y)
 
+    ###################################################################################
+    def draw_x_border(self, border: int) -> list[str]:
+        """Return the x number border"""
+        (min_x, _), (max_x, _) = self._map_range()
+
+        ans = []
+
+        ans.append("     ")
+        for x in range(min_x - border, max_x + border + 1):
+            if -10 < x < 0:
+                ans.append("-")
+            else:
+                ans.append(f"{abs(x) // 10}")
+        ans.append("\n")
+
+        ans.append("     ")
+        for x in range(min_x - border, max_x + border + 1):
+            ans.append(f"{abs(x) % 10}")
+        ans.append("\n")
+        return ans
+
+    ###################################################################################
     def draw(self) -> str:
         """Return a picture of the map"""
         ans = []
         border = 4
         (min_x, min_y), (max_x, max_y) = self._map_range()
+        ans.extend(self.draw_x_border(border))
         for y in range(
             min_y - border,
             max_y + border + 1,
@@ -54,9 +77,12 @@ class MapData:
                 else:
                     ans.append(self._data[x, y].des)
             ans.append(f" {y:-3}\n")
+        ans.extend(self.draw_x_border(border))
+
         return "".join(ans)
 
 
+#######################################################################################
 def _is_odd(x: int) -> bool:
     if x % 2 == 1:
         return True
