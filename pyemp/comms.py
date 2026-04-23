@@ -35,19 +35,25 @@ def setup_socket(server: str = "localhost", port: int = 6665) -> emp_sock:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.connect((server, port))
         while True:
+            data = read_full(sock)
+            lines = data.decode("utf-8").splitlines()
             result = []
-            while True:
-                select.select([sock], [], [])
-                recvd_text = sock.recv(1024 * 4).decode("utf-8")
-                lines = recvd_text.splitlines()
-                for line in lines:
-                    status, text = line.split(None, 1)
+            for line in lines:
+                status, text = line.split(None, 1)
+                if status != EmpProto.C_PROMPT:
                     result.append(text)
-                if status == EmpProto.C_DATA:
-                    continue
-                break
             msg = yield result
             sock.send((msg + "\n").encode("utf-8"))
+
+
+#######################################################################################
+def read_full(sock) -> bytes:
+    """Read a full result"""
+    data = b""
+    while select.select([sock], [], [], 0.1)[0]:
+        recvd_data = sock.recv(1024 * 4)
+        data += recvd_data
+    return data
 
 
 # EOF
