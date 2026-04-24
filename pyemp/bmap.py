@@ -6,7 +6,7 @@ from pyemp.sector import Sector
 
 
 #######################################################################################
-def bmap(sock: emp_sock) -> MapData:
+def cmd_bmap(sock: emp_sock) -> MapData:
     """Handle a bmap command"""
     data = MapData()
     msg = sock.send("bmap *")

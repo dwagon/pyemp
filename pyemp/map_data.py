@@ -11,24 +11,34 @@ class MapData:
     """All the map"""
 
     def __init__(self):
-        self._data: dict[tuple[int, int], Sector] = {}
+        self.data: dict[tuple[int, int], Sector] = {}
 
     def update(self, other: Self) -> None:
         """Update the data with another source"""
-        for element in other._data:
-            self._data[element] = other._data[element]
+        assert isinstance(other, MapData)
+
+        for coord in other.data:
+            if coord not in self.data:  # No self data so we take new one
+                self.data[coord] = other.data[coord]
+                continue
+            self.data[coord].update(other.data[coord])
 
     def add(self, sect: Sector) -> None:
         """Add a sector to the map"""
-        self._data[(sect.x, sect.y)] = sect
+        self.data[(sect.x, sect.y)] = sect
 
     def __getitem__(self, item):
-        return self._data[item]
+        return self.data[item]
+
+    def __contains__(self, item):
+        if item in self.data:
+            return True
+        return False
 
     def _map_range(self) -> tuple[tuple[int, int], tuple[int, int]]:
         min_x = min_y = 9999
         max_x = max_y = -9999
-        for x, y in self._data:
+        for x, y in self.data:
             min_x = min(min_x, x)
             min_y = min(min_y, y)
             max_x = max(max_x, x)
@@ -72,10 +82,10 @@ class MapData:
                 if _is_odd(x) != _is_odd(y):
                     ans.append(" ")
                     continue
-                if (x, y) not in self._data:
+                if (x, y) not in self.data:
                     ans.append(" ")
                 else:
-                    ans.append(self._data[x, y].des)
+                    ans.append(self.data[x, y].des)
             ans.append(f" {y:-3}\n")
         ans.extend(self.draw_x_border(border))
 

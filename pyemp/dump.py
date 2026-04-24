@@ -15,7 +15,7 @@ def to_opt_int(in_str: str) -> opt_int:
 
 
 #######################################################################################
-def dump(sock: emp_sock) -> MapData:
+def cmd_dump(sock: emp_sock) -> MapData:
     """Handle a dump command"""
     data = MapData()
     msg = sock.send("dump #")
