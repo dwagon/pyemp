@@ -1,7 +1,6 @@
 """Main"""
 
 import curses
-import time
 
 from pyemp.game import Game
 
@@ -13,7 +12,6 @@ def main(stdscr: curses.window):
     """Main"""
     game = Game(CONFIG, stdscr)
     game.login()
-    game.draw_map()
     game.main_loop()
 
 

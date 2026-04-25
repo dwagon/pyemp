@@ -7,6 +7,8 @@ from pyemp.misc import login
 from pyemp.map_data import MapData
 from pyemp.dump import cmd_dump
 from pyemp.bmap import cmd_bmap
+from pyemp.vers import cmd_vers
+from pyemp.sector import Sector
 
 
 #######################################################################################
@@ -35,9 +37,20 @@ class Game:
         """Draw the map"""
         self.map_win.clear()
         self.map_win.border()
-        map_str = self.map.draw()
-        for pos, line in enumerate(map_str.splitlines(), 1):
-            self.map_win.addstr(pos, 1, line)
+
+        for x in range(-self.config["WORLD_X"] // 2, self.config["WORLD_X"] // 2):
+            for y in range(-self.config["WORLD_Y"] // 2, self.config["WORLD_Y"] // 2):
+                if (x, y) in self.map:
+                    if self.x == x and self.y == y:
+                        attr = curses.A_REVERSE
+                    else:
+                        attr = curses.A_NORMAL
+                    self.stdscr.addstr(
+                        y + self.config["WORLD_Y"] // 2,
+                        x + self.config["WORLD_X"] // 2,
+                        self.map[x, y].des,
+                        attr,
+                    )
 
     def refresh_screen(self):
         """Refresh screen"""
@@ -67,6 +80,18 @@ class Game:
         login(self.sock, self.config["country"], self.config["password"])
         self.map.update(cmd_dump(self.sock))
         self.map.update(cmd_bmap(self.sock))
+        vers_config = cmd_vers(self.sock)
+        for var in ("WORLD_X", "WORLD_Y"):
+            self.config[var] = vers_config[var]
+        self.fill_map()
+
+    def fill_map(self):
+        """Fill the empty spots of the map in"""
+        m = MapData()
+        for x in range(-self.config["WORLD_X"] // 2, self.config["WORLD_X"] // 2):
+            for y in range(-self.config["WORLD_Y"] // 2, self.config["WORLD_Y"] // 2):
+                m.add(Sector(x, y, ""))
+        self.map.update(m)
 
     def main_loop(self) -> None:
         """Main event loop"""

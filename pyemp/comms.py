@@ -39,7 +39,11 @@ def setup_socket(server: str = "localhost", port: int = 6665) -> emp_sock:
             lines = data.decode("utf-8").splitlines()
             result = []
             for line in lines:
-                status, text = line.split(None, 1)
+                if len(line.split()) == 1:
+                    status = line
+                    text = ""
+                else:
+                    status, text = line.split(None, 1)
                 if status != EmpProto.C_PROMPT:
                     result.append(text)
             msg = yield result

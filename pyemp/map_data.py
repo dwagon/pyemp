@@ -67,17 +67,19 @@ class MapData:
         return ans
 
     ###################################################################################
-    def draw(self) -> str:
+    def draw(self, draw_scale=True) -> str:
         """Return a picture of the map"""
         ans = []
         border = 4
         (min_x, min_y), (max_x, max_y) = self._map_range()
-        ans.extend(self.draw_x_border(border))
+        if draw_scale:
+            ans.extend(self.draw_x_border(border))
         for y in range(
             min_y - border,
             max_y + border + 1,
         ):
-            ans.append(f"{y:3}  ")
+            if draw_scale:
+                ans.append(f"{y:3}  ")
             for x in range(min_x - border, max_x + border + 1):
                 if _is_odd(x) != _is_odd(y):
                     ans.append(" ")
@@ -85,9 +87,14 @@ class MapData:
                 if (x, y) not in self.data:
                     ans.append(" ")
                 else:
-                    ans.append(self.data[x, y].des)
-            ans.append(f" {y:-3}\n")
-        ans.extend(self.draw_x_border(border))
+                    if self.data[x, y].des:
+                        ans.append(self.data[x, y].des)
+                    else:
+                        ans.append(" ")
+            if draw_scale:
+                ans.append(f" {y:-3}\n")
+        if draw_scale:
+            ans.extend(self.draw_x_border(border))
 
         return "".join(ans)
 
