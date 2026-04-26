@@ -4,6 +4,7 @@ import curses
 import time
 import tabulate
 from pyemp.comms import setup_socket
+from pyemp.commands import cmd_vers, cmd_dump, cmd_bmap
 from pyemp.misc import login
 from pyemp.map_data import MapData
 from pyemp.dump import cmd_dump
