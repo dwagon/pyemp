@@ -2,6 +2,7 @@
 
 import curses
 import time
+import tabulate
 from pyemp.comms import setup_socket
 from pyemp.misc import login
 from pyemp.map_data import MapData
@@ -25,14 +26,18 @@ class Game:
         self.sock = setup_socket(config["server"], config["port"])
         next(self.sock)
 
+    ###################################################################################
     def init_windows(self):
         """Initialise windowing"""
-        half_way = curses.COLS // 2
-        self.map_win = curses.newwin(curses.LINES - 5, half_way)
+        lines = curses.LINES  # pylint: disable=no-member
+        cols = curses.COLS  # pylint: disable=no-member
+        half_way = curses.COLS // 2  # pylint: disable=no-member
+        self.map_win = curses.newwin(lines - 5, half_way)
 
-        self.data_win = curses.newwin(curses.LINES - 5, half_way - 1, 0, half_way + 1)
-        self.log_win = curses.newwin(5, curses.COLS, curses.LINES - 5, 0)
+        self.data_win = curses.newwin(lines - 5, half_way - 1, 0, half_way + 1)
+        self.log_win = curses.newwin(5, cols, lines - 5, 0)
 
+    ###################################################################################
     def draw_map(self):
         """Draw the map"""
         self.map_win.clear()
@@ -52,6 +57,7 @@ class Game:
                         attr,
                     )
 
+    ###################################################################################
     def refresh_screen(self):
         """Refresh screen"""
         self.log_win.clear()
@@ -64,6 +70,7 @@ class Game:
         self.data_win.refresh()
         self.log_win.refresh()
 
+    ###################################################################################
     def sector_details(self):
         """Fill details about the sector"""
         self.data_win.clear()
@@ -73,8 +80,57 @@ class Game:
             return
         m = self.map[(self.x, self.y)]
         self.data_win.addstr(2, 1, m.des)
-        self.data_win.addstr(3, 1, f"Civs: {m.civ}, UW: {m.uw}, Mil: {m.mil}")
+        self.data_win.addstr(
+            3,
+            1,
+            f"Civs: {m.civ}/{m.c_dist}, UW: {m.uw}/{m.u_dist}, Mil: {m.mil}/{m.m_dist}",
+        )
+        self.data_win.addstr(
+            4,
+            1,
+            f"Resource: Iron: {m.min}, Gold: {m.gold}, Fert: {m.fert}, Oil: {m.ocontent}, Uranium {m.uran}",
+        )
+        table = self.distribution_details_table()
+        for y, line in enumerate(table.splitlines(), 6):
+            self.data_win.addstr(y, 1, line)
 
+    ###################################################################################
+    def distribution_details_table(self) -> str:
+        """Return the details about commodity distribution"""
+        commodities = [
+            ("Shells", "shell", "s_dist", "s_del", "s_cut"),
+            ("Guns", "gun", "g_dist", "g_del", "g_cut"),
+            ("Petrol", "pet", "p_dist", "p_del", "p_cut"),
+            ("Iron", "iron", "i_dist", "i_del", "i_cut"),
+            ("Gold Dust", "dust", "d_dist", "d_del", "d_cut"),
+            ("Gold Bars", "bar", "b_dist", "b_del", "b_cut"),
+            ("Oil", "oil", "s_dist", "o_del", "o_cut"),
+            ("Light CM", "lcm", "l_dist", "l_del", "l_cut"),
+            ("Heavy CM", "hcm", "h_dist", "h_del", "h_cut"),
+            ("Rads", "rad", "r_dist", "r_del", "r_cut"),
+        ]
+        headers = ["Commodity", "Amount", "Threshold", "Deliver", "Cutoff"]
+        m = self.map[(self.x, self.y)]
+
+        table = []
+        for name, amnt, thresh, deliv, cutoff in commodities:
+            line = [name, m[amnt]]
+            if m[thresh]:
+                line.append(m[thresh])
+            else:
+                line.append("")
+            if m[deliv]:
+                line.append(m[deliv])
+            else:
+                line.append("")
+            if m[cutoff]:
+                line.append(m[cutoff])
+            else:
+                line.append("")
+            table.append(line)
+        return tabulate.tabulate(table, headers=headers)
+
+    ###################################################################################
     def login(self):
         """Login and get an initial dump"""
         login(self.sock, self.config["country"], self.config["password"])
@@ -85,6 +141,7 @@ class Game:
             self.config[var] = vers_config[var]
         self.fill_map()
 
+    ###################################################################################
     def fill_map(self):
         """Fill the empty spots of the map in"""
         m = MapData()
@@ -93,6 +150,7 @@ class Game:
                 m.add(Sector(x, y, ""))
         self.map.update(m)
 
+    ###################################################################################
     def main_loop(self) -> None:
         """Main event loop"""
         self.refresh_screen()
