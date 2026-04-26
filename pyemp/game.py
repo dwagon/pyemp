@@ -12,6 +12,20 @@ from pyemp.vers import cmd_vers
 from pyemp.sector import Sector, desig_name
 
 
+class Keys:
+    """Keys - has to be a class rather than a variable for the match/case to work"""
+
+    KEY_B = ord("b")
+    KEY_G = ord("g")
+    KEY_J = ord("j")
+    KEY_N = ord("n")
+    KEY_Q = ord("q")
+    KEY_U = ord("u")
+    KEY_Y = ord("y")
+
+
+#######################################################################################
+#######################################################################################
 #######################################################################################
 class Game:
     """Game Object"""
@@ -25,6 +39,7 @@ class Game:
         self.init_windows()
         self.sock = setup_socket(config["server"], config["port"])
         next(self.sock)
+        self.log_buffer = []
 
     ###################################################################################
     def init_windows(self):
@@ -32,10 +47,14 @@ class Game:
         lines = curses.LINES  # pylint: disable=no-member
         cols = curses.COLS  # pylint: disable=no-member
         half_way = cols // 2
+        log_height = 7
 
-        self.map_win = curses.newwin(lines - 5, half_way)
-        self.data_win = curses.newwin(lines - 5, half_way - 1, 0, half_way + 1)
-        self.log_win = curses.newwin(5, cols, lines - 5, 0)
+        self.map_win = curses.newwin(lines - log_height, half_way)
+        self.data_win = curses.newwin(lines - log_height, half_way - 1, 0, half_way + 1)
+        self.log_win = curses.newwin(log_height, cols, lines - log_height, 0)
+
+        curses.mousemask(curses.ALL_MOUSE_EVENTS)
+        self.stdscr.keypad(1)
 
     ###################################################################################
     def draw_map(self):
@@ -56,26 +75,44 @@ class Game:
                         self.map[x, y].des,
                         attr,
                     )
+        self.map_win.refresh()
+
+    ###################################################################################
+    def log(self, msg: str) -> None:
+        """Log a message to the log buffer"""
+        self.log_buffer.append(msg)
+
+    ###################################################################################
+    def draw_log_win(self):
+        """Draw the log window"""
+        max_y, _ = self.log_win.getmaxyx()
+        vert_size = max_y - 2  # How many lines we can display (2 for border)
+        self.log_win.clear()
+        self.log_win.border()
+
+        for y, line in enumerate(self.log_buffer[-vert_size:], 1):
+            self.log_win.addstr(y, 1, line)
+        self.log_win.refresh()
 
     ###################################################################################
     def refresh_screen(self):
         """Refresh screen"""
-        self.log_win.clear()
-        self.log_win.border()
-        self.log_win.addstr(1, 1, time.ctime())
-
+        self.draw_log_win()
         self.draw_map()
-        self.sector_details()
+        self.draw_data_window()
 
-        self.map_win.refresh()
+    ###################################################################################
+    def draw_data_window(self):
+        """Manage the data window"""
+        self.data_win.clear()
+        self.data_win.border()
+        self.sector_details()
         self.data_win.refresh()
-        self.log_win.refresh()
 
     ###################################################################################
     def sector_details(self):
         """Fill details about the sector"""
-        self.data_win.clear()
-        self.data_win.border()
+
         self.data_win.addstr(1, 1, f"Hex {self.x}, {self.y}")
         if (self.x, self.y) not in self.map:
             return
@@ -158,26 +195,30 @@ class Game:
         """Main event loop"""
         self.refresh_screen()
         while True:
-            ch = self.stdscr.getkey()
+            # Sadly need getch rather than getkey to handle mouse
+            ch = self.stdscr.getch()
             match ch:
-                case "q":
+                case Keys.KEY_Q:
                     break
-                case "g":
+                case Keys.KEY_G:
                     self.x -= 2
-                case "j":
+                case Keys.KEY_J:
                     self.x += 2
-                case "y":
+                case Keys.KEY_Y:
                     self.x -= 1
                     self.y -= 1
-                case "u":
+                case Keys.KEY_U:
                     self.x += 1
                     self.y -= 1
-                case "b":
+                case Keys.KEY_B:
                     self.x -= 1
                     self.y += 1
-                case "n":
+                case Keys.KEY_N:
                     self.x += 1
                     self.y += 1
+                case curses.KEY_MOUSE:
+                    mouse = curses.getmouse()
+                    self.log(f"Mouse: {mouse[1]}, {mouse[2]} Button {mouse[4]}")
                 case _:
                     pass
 
