@@ -9,7 +9,7 @@ from pyemp.map_data import MapData
 from pyemp.dump import cmd_dump
 from pyemp.bmap import cmd_bmap
 from pyemp.vers import cmd_vers
-from pyemp.sector import Sector
+from pyemp.sector import Sector, desig_name
 
 
 #######################################################################################
@@ -31,9 +31,9 @@ class Game:
         """Initialise windowing"""
         lines = curses.LINES  # pylint: disable=no-member
         cols = curses.COLS  # pylint: disable=no-member
-        half_way = curses.COLS // 2  # pylint: disable=no-member
-        self.map_win = curses.newwin(lines - 5, half_way)
+        half_way = cols // 2
 
+        self.map_win = curses.newwin(lines - 5, half_way)
         self.data_win = curses.newwin(lines - 5, half_way - 1, 0, half_way + 1)
         self.log_win = curses.newwin(5, cols, lines - 5, 0)
 
@@ -66,6 +66,7 @@ class Game:
 
         self.draw_map()
         self.sector_details()
+
         self.map_win.refresh()
         self.data_win.refresh()
         self.log_win.refresh()
@@ -79,7 +80,8 @@ class Game:
         if (self.x, self.y) not in self.map:
             return
         m = self.map[(self.x, self.y)]
-        self.data_win.addstr(2, 1, m.des)
+        des_str = get_design_str(m)
+        self.data_win.addstr(2, 1, des_str)
         self.data_win.addstr(
             3,
             1,
@@ -88,7 +90,8 @@ class Game:
         self.data_win.addstr(
             4,
             1,
-            f"Resource: Iron: {m.min}, Gold: {m.gold}, Fert: {m.fert}, Oil: {m.ocontent}, Uranium {m.uran}",
+            f"Resource: Iron: {m.min}, Gold: {m.gold}, "
+            "Fert: {m.fert}, Oil: {m.ocontent}, Uranium {m.uran}",
         )
         table = self.distribution_details_table()
         for y, line in enumerate(table.splitlines(), 6):
@@ -179,6 +182,17 @@ class Game:
                     pass
 
             self.refresh_screen()
+
+
+###################################################################################
+def get_design_str(m: Sector) -> str:
+    """Return the designation details for the current sector"""
+    des_str = ""
+    if m.des:
+        des_str = f"{desig_name(m.des).title()} ({m.des})"
+    if m.sdes and m.sdes != " ":
+        des_str += f" Becoming {desig_name(m.sdes).title()} ({m.sdes})"
+    return des_str
 
 
 # EOF
