@@ -27,9 +27,14 @@ class Sector:
         """Return the dictionary items of the sector"""
         return list(self._data.items())
 
+    def __getitem__(self, item):
+        return self._data.get(item)
+
     def update(self, other: Self):
         """Update with details from another sector"""
         assert isinstance(other, Sector)
+        assert other.x == self.x
+        assert other.y == self.y
         for k, v in other.items():
             if v:
                 self._data[k] = v
