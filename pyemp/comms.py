@@ -2,6 +2,7 @@
 
 import socket
 import select
+import time
 from enum import StrEnum
 from typing import Generator
 
@@ -39,6 +40,7 @@ def setup_socket(server: str = "localhost", port: int = 6665) -> emp_sock:
             lines = data.decode("utf-8").splitlines()
             result = []
             for line in lines:
+                log(line)
                 if len(line.split()) == 1:
                     status = line
                     text = ""
@@ -47,7 +49,14 @@ def setup_socket(server: str = "localhost", port: int = 6665) -> emp_sock:
                 if status != EmpProto.C_PROMPT:
                     result.append(text)
             msg = yield result
+            log(msg)
             sock.send((msg + "\n").encode("utf-8"))
+
+
+#######################################################################################
+def log(msg: str) -> None:
+    with open("/tmp/empire_log", "a", encoding="utf-8") as log:
+        print(f"{time.ctime()}: {msg}", file=log)
 
 
 #######################################################################################
