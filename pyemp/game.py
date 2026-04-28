@@ -1,8 +1,9 @@
 """Game Object - singleton"""
 
 import curses
-import time
 import tabulate
+
+from pyemp.button import Button
 from pyemp.comms import setup_socket
 from pyemp.map_data import MapData
 from pyemp.misc import initial_map_data
@@ -29,10 +30,11 @@ class Game:
 
     def __init__(self, config: dict[str, int | str], stdscr: curses.window):
         self.stdscr = stdscr
-        self.stdscr.clear()
+
         self.config = config
         self.map = MapData()
         self.x = self.y = 0
+        self.buttons = []
         self.init_windows()
         self.sock = setup_socket(config["server"], config["port"])
         next(self.sock)
@@ -50,11 +52,20 @@ class Game:
         cols = curses.COLS  # pylint: disable=no-member
         half_way = cols // 2
         log_height = 7
+        button_height = 3
+        self.stdscr.clear()
 
-        self.map_win = curses.newwin(lines - log_height, half_way)
-        self.data_win = curses.newwin(lines - log_height, half_way - 1, 0, half_way + 1)
+        self.map_win = curses.newwin(lines - log_height - button_height, half_way)
+        self.data_win = curses.newwin(
+            lines - log_height - button_height, half_way - 1, 0, half_way + 1
+        )
         self.log_win = curses.newwin(log_height, cols, lines - log_height, 0)
 
+        # self.button_win = curses.newwin(
+        #    button_height, cols, lines - log_height - button_height, 0
+        # )
+        self.button_bar = (button_height, cols, lines - log_height - button_height, 0)
+        self.add_buttons(self.stdscr)
         curses.mousemask(curses.ALL_MOUSE_EVENTS)
         self.stdscr.keypad(1)
 
@@ -85,7 +96,7 @@ class Game:
         self.log_buffer.append(msg)
 
     ###################################################################################
-    def draw_log_win(self):
+    def draw_log_window(self):
         """Draw the log window"""
         max_y, _ = self.log_win.getmaxyx()
         vert_size = max_y - 2  # How many lines we can display (2 for border)
@@ -99,9 +110,25 @@ class Game:
     ###################################################################################
     def refresh_screen(self):
         """Refresh screen"""
-        self.draw_log_win()
+        self.draw_log_window()
         self.draw_map()
         self.draw_data_window()
+        self.draw_button_window()
+
+    ###################################################################################
+    def add_buttons(self, win: curses.window):
+        """Add the buttons"""
+        x_offset = self.button_bar[3]
+        y_offset = self.button_bar[2]
+        b = Button("Desig", y_offset, x_offset, win)
+        self.buttons.append(b)
+        x_offset += b.width
+
+    ###################################################################################
+    def draw_button_window(self):
+        """Draw the button window"""
+        for button in self.buttons:
+            button.draw()
 
     ###################################################################################
     def draw_data_window(self):
@@ -119,7 +146,7 @@ class Game:
         if (self.x, self.y) not in self.map:
             return
         m = self.map[(self.x, self.y)]
-        des_str = get_design_str(m)
+        des_str = get_desig_str(m)
         self.data_win.addstr(2, 1, des_str)
         self.data_win.addstr(
             3,
@@ -130,7 +157,7 @@ class Game:
             4,
             1,
             f"Resource: Iron: {m.min}, Gold: {m.gold}, "
-            "Fert: {m.fert}, Oil: {m.ocontent}, Uranium {m.uran}",
+            f"Fert: {m.fert}, Oil: {m.ocontent}, Uranium {m.uran}",
         )
         table = self.distribution_details_table()
         for y, line in enumerate(table.splitlines(), 6):
@@ -199,16 +226,24 @@ class Game:
                     self.x += 1
                     self.y += 1
                 case curses.KEY_MOUSE:
-                    mouse = curses.getmouse()
-                    self.log(f"Mouse: {mouse[1]}, {mouse[2]} Button {mouse[4]}")
+                    self.button_press()
                 case _:
                     pass
 
             self.refresh_screen()
 
+    ###################################################################################
+    def button_press(self) -> None:
+        """Handle button presses"""
+        mouse = curses.getmouse()
+        if mouse[4] & curses.BUTTON1_CLICKED:
+            for button in self.buttons:
+                if button.is_clicked(mouse[2], mouse[1]):
+                    self.log(f"Clicked on {button.label}")
+
 
 ###################################################################################
-def get_design_str(m: Sector) -> str:
+def get_desig_str(m: Sector) -> str:
     """Return the designation details for the current sector"""
     des_str = ""
     if m.des:
