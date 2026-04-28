@@ -4,12 +4,8 @@ import curses
 import time
 import tabulate
 from pyemp.comms import setup_socket
-from pyemp.commands import cmd_vers, cmd_dump, cmd_bmap
-from pyemp.misc import login
 from pyemp.map_data import MapData
-from pyemp.dump import cmd_dump
-from pyemp.bmap import cmd_bmap
-from pyemp.vers import cmd_vers
+from pyemp.misc import initial_map_data
 from pyemp.sector import Sector, desig_name
 
 
@@ -41,6 +37,11 @@ class Game:
         self.sock = setup_socket(config["server"], config["port"])
         next(self.sock)
         self.log_buffer = []
+
+    ###################################################################################
+    def initialise_data(self):
+        """Initialise game data"""
+        self.map = initial_map_data(self.sock, self.config)
 
     ###################################################################################
     def init_windows(self):
@@ -170,26 +171,6 @@ class Game:
                 line.append("")
             table.append(line)
         return tabulate.tabulate(table, headers=headers)
-
-    ###################################################################################
-    def login(self):
-        """Login and get an initial dump"""
-        login(self.sock, self.config["country"], self.config["password"])
-        self.map.update(cmd_dump(self.sock))
-        self.map.update(cmd_bmap(self.sock))
-        vers_config = cmd_vers(self.sock)
-        for var in ("WORLD_X", "WORLD_Y"):
-            self.config[var] = vers_config[var]
-        self.fill_map()
-
-    ###################################################################################
-    def fill_map(self):
-        """Fill the empty spots of the map in"""
-        m = MapData()
-        for x in range(-self.config["WORLD_X"] // 2, self.config["WORLD_X"] // 2):
-            for y in range(-self.config["WORLD_Y"] // 2, self.config["WORLD_Y"] // 2):
-                m.add(Sector(x, y, ""))
-        self.map.update(m)
 
     ###################################################################################
     def main_loop(self) -> None:

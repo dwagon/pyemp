@@ -11,7 +11,7 @@ CONFIG = {"server": "localhost", "port": 6665, "country": "1", "password": "1"}
 def main(stdscr: curses.window):
     """Main"""
     game = Game(CONFIG, stdscr)
-    game.login()
+    game.initialise_data()
     game.main_loop()
 
 
