@@ -1,16 +1,25 @@
 """Curses based button"""
 
 import curses
+from typing import Callable
 
 
 #######################################################################################
 class Button:
     """Button"""
 
-    def __init__(self, label: str, y: int, x: int, window: curses.window):
+    def __init__(
+        self,
+        label: str,
+        y: int,
+        x: int,
+        window: curses.window,
+        callback: Callable[[], None],
+    ):
         self.label = label
         self.y = y
         self.x = x
+        self.callback = callback
         self.window = window.derwin(3, len(label) + 2, self.y, self.x)
 
     def draw(self):
@@ -23,13 +32,13 @@ class Button:
         """Did the user click on the button"""
         min_y, min_x = self.window.getbegyx()
         max_y, max_x = self.window.getmaxyx()
-        print(
-            f"DBG {min_x=} {min_y=} {max_x+min_x=} {max_y+min_y=} {mouse_x=} {mouse_y=}",
-            file=open("/tmp/err", "a"),
-        )
         if min_y < mouse_y < max_y + min_y and min_x < mouse_x < max_x + min_x:
             return True
         return False
+
+    def do_callback(self):
+        """Button has been clicked - do callback"""
+        self.callback()
 
     @property
     def width(self) -> int:

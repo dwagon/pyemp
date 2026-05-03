@@ -23,48 +23,49 @@ type opt_int = int | None
 #  =  bridge span
 #  @  bridge tower
 
+DESIG_KEY_MAP = {
+    ".": "sea",
+    "^": "mountain",
+    "s": "sanctuary",
+    "\\": "wasteland",
+    "-": "wilderness",
+    "~": "plains",
+    "c": "capital",
+    "p": "park",
+    "+": "highway",
+    ")": "radar",
+    "#": "bridge head",
+    "=": "bridge span",
+    "@": "bridge tower",
+    "d": "defense plant",
+    "i": "shell industry",
+    "m": "mine",
+    "g": "gold mine",
+    "h": "harbor",
+    "w": "warehouse",
+    "u": "uranium mine",
+    "*": "airfield",
+    "a": "agribusiness",
+    "o": "oil field",
+    "j": "light manufacturing",
+    "k": "heavy manufacturing",
+    "%": "refinery",
+    "t": "technical center",
+    "f": "fortress",
+    "r": "research lab",
+    "n": "nuclear plant",
+    "l": "library/school",
+    "e": "enlistment center",
+    "!": "headquarters",
+    "b": "bank",
+    "?": "unknown",
+}
+
 
 #######################################################################################
 def desig_name(desig: str) -> str:
     """Return human name for designator"""
-    desig_key = {
-        ".": "sea",
-        "^": "mountain",
-        "s": "sanctuary",
-        "\\": "wasteland",
-        "-": "wilderness",
-        "~": "plains",
-        "c": "capital",
-        "p": "park",
-        "+": "highway",
-        ")": "radar",
-        "#": "bridge head",
-        "=": "bridge span",
-        "@": "bridge tower",
-        "d": "defense plant",
-        "i": "shell industry",
-        "m": "mine",
-        "g": "gold mine",
-        "h": "harbor",
-        "w": "warehouse",
-        "u": "uranium mine",
-        "*": "airfield",
-        "a": "agribusiness",
-        "o": "oil field",
-        "j": "light manufacturing",
-        "k": "heavy manufacturing",
-        "%": "refinery",
-        "t": "technical center",
-        "f": "fortress",
-        "r": "research lab",
-        "n": "nuclear plant",
-        "l": "library/school",
-        "e": "enlistment center",
-        "!": "headquarters",
-        "b": "bank",
-        "?": "unknown",
-    }
-    return desig_key.get(desig, "ERR")
+    return DESIG_KEY_MAP.get(desig, "ERR")
 
 
 #######################################################################################

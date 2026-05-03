@@ -1,25 +1,16 @@
 """Game Object - singleton"""
 
 import curses
+from collections import namedtuple
 import tabulate
 
-from pyemp.button import Button
+from pyemp.lib_curses.button import Button
+from pyemp.lib_curses.keys import Keys
 from pyemp.comms import setup_socket
 from pyemp.map_data import MapData
 from pyemp.misc import initial_map_data
 from pyemp.sector import Sector, desig_name
-
-
-class Keys:
-    """Keys - has to be a class rather than a variable for the match/case to work"""
-
-    KEY_B = ord("b")
-    KEY_G = ord("g")
-    KEY_J = ord("j")
-    KEY_N = ord("n")
-    KEY_Q = ord("q")
-    KEY_U = ord("u")
-    KEY_Y = ord("y")
+from pyemp.desig_window import Desig_Window
 
 
 #######################################################################################
@@ -39,6 +30,7 @@ class Game:
         self.sock = setup_socket(config["server"], config["port"])
         next(self.sock)
         self.log_buffer = []
+        print("DBG Game", file=open("/tmp/err", "w"))
 
     ###################################################################################
     def initialise_data(self):
@@ -64,10 +56,14 @@ class Game:
         # self.button_win = curses.newwin(
         #    button_height, cols, lines - log_height - button_height, 0
         # )
-        self.button_bar = (button_height, cols, lines - log_height - button_height, 0)
+        ButtonBar = namedtuple("ButtonBar", ["height", "width", "top_y", "top_x"])
+        self.button_bar = ButtonBar(
+            button_height, cols, lines - log_height - button_height, 0
+        )
         self.add_buttons(self.stdscr)
         curses.mousemask(curses.ALL_MOUSE_EVENTS)
-        self.stdscr.keypad(1)
+        curses.curs_set(0)  # Invisible cursor
+        self.stdscr.keypad(True)
 
     ###################################################################################
     def draw_map(self):
@@ -114,19 +110,40 @@ class Game:
         self.draw_map()
         self.draw_data_window()
         self.draw_button_window()
+        self.stdscr.refresh()
 
     ###################################################################################
     def add_buttons(self, win: curses.window):
         """Add the buttons"""
         x_offset = self.button_bar[3]
         y_offset = self.button_bar[2]
-        b = Button("Desig", y_offset, x_offset, win)
+        b = Button("Desig", y_offset, x_offset, win, self.desig_callback)
+        self.buttons.append(b)
+        x_offset += b.width
+        b = Button("Thresh", y_offset, x_offset, win, self.thresh_callback)
         self.buttons.append(b)
         x_offset += b.width
 
     ###################################################################################
+    def desig_callback(self):
+        """Someone clicked the Desig button"""
+        self.log("Desig Callback")
+        dw = Desig_Window(self.x, self.y, self.stdscr, 40, 80, 4, 4)
+        dw.mainloop()
+
+    ###################################################################################
+    def thresh_callback(self):
+        """The thresh button"""
+        self.log("Thresh Callback")
+
+    ###################################################################################
     def draw_button_window(self):
         """Draw the button window"""
+        for line in range(
+            self.button_bar.top_y, self.button_bar.top_y + self.button_bar.height
+        ):
+            self.stdscr.move(line, 0)
+            self.stdscr.clrtoeol()
         for button in self.buttons:
             button.draw()
 
@@ -240,6 +257,8 @@ class Game:
             for button in self.buttons:
                 if button.is_clicked(mouse[2], mouse[1]):
                     self.log(f"Clicked on {button.label}")
+                    button.do_callback()
+                    self.refresh_screen()
 
 
 ###################################################################################

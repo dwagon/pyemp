@@ -6,6 +6,12 @@ from pyemp.sector import Sector
 from pyemp.map_data import MapData
 
 
+###################################################################################
+def debug(msg: str) -> None:
+    """Write out a debug message"""
+    print(msg, file=open("/tmp/err", "a", encoding="utf-8"))
+
+
 #######################################################################################
 def login(sock: emp_sock, country_name: str, password: str) -> None:
     """Login to a country"""
