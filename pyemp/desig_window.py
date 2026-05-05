@@ -33,6 +33,7 @@ class Desig_Window:
         self.nlines = nlines
         self.ncols = ncols
         self.widgets: list[Widget] = []
+        self.new_desig: str = ""
         self.modal = Modal(
             self.parent_window, self.nlines, self.ncols, self.begin_y, self.begin_x
         )
@@ -63,4 +64,12 @@ class Desig_Window:
 
         self.modal.mainloop()
         ans = self.listbox.get()
-        debug(f"DBG {ans=}")
+        self.new_desig = ans
+
+    ###################################################################################
+    def get(self) -> str:
+        """Return result"""
+        return self.new_desig
+
+
+# EOF

@@ -8,9 +8,10 @@ from pyemp.lib_curses.button import Button
 from pyemp.lib_curses.keys import Keys
 from pyemp.comms import setup_socket
 from pyemp.map_data import MapData
-from pyemp.misc import initial_map_data
+from pyemp.misc import initial_map_data, debug, update_map
 from pyemp.sector import Sector, desig_name
 from pyemp.desig_window import Desig_Window
+from pyemp.commands import cmd_desig
 
 
 #######################################################################################
@@ -107,10 +108,9 @@ class Game:
     def refresh_screen(self):
         """Refresh screen"""
         self.draw_log_window()
-        self.draw_map()
         self.draw_data_window()
         self.draw_button_window()
-        self.stdscr.refresh()
+        self.draw_map()
 
     ###################################################################################
     def add_buttons(self, win: curses.window):
@@ -127,9 +127,11 @@ class Game:
     ###################################################################################
     def desig_callback(self):
         """Someone clicked the Desig button"""
-        self.log("Desig Callback")
         dw = Desig_Window(self.x, self.y, self.stdscr, 40, 80, 4, 4)
         dw.mainloop()
+        new_desig = dw.get()
+        cmd_desig(self.sock, self.x, self.y, new_desig)
+        self.map = update_map(self.sock)
 
     ###################################################################################
     def thresh_callback(self):

@@ -24,13 +24,20 @@ def login(sock: emp_sock, country_name: str, password: str) -> None:
 def initial_map_data(sock: emp_sock, config: dict[str, int | str]) -> MapData:
     """Login and get an initial dump"""
     login(sock, config["country"], config["password"])
-    m = MapData()
-    m.update(cmd_dump(sock))
-    m.update(cmd_bmap(sock))
+    m = update_map(sock)
     vers_config = cmd_vers(sock)
     for var in ("WORLD_X", "WORLD_Y"):
         config[var] = vers_config[var]
     m.update(fill_map(config["WORLD_X"], config["WORLD_Y"]))
+    return m
+
+
+###################################################################################
+def update_map(sock: emp_sock) -> MapData:
+    """Update the map"""
+    m = MapData()
+    m.update(cmd_dump(sock))
+    m.update(cmd_bmap(sock))
     return m
 
 
