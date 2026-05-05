@@ -4,7 +4,6 @@ import curses
 from collections import namedtuple
 from .widget import Widget
 from .keys import Keys
-from ..misc import debug
 
 #######################################################################################
 ENTRY = namedtuple("entry", ["value", "label"])
@@ -53,19 +52,17 @@ class Listbox(Widget):
     ###################################################################################
     def has_finished(self) -> bool:
         """Has the user selected the value"""
-        debug(f"{self.finished=}")
         return self.finished
 
     ###################################################################################
     def handle_input(self, ch: int) -> bool:
         """Handle keys"""
-        debug(f"Input {ch=} {chr(ch)}")
         match ch:
             case Keys.KEY_W:
                 self.selected = max(0, self.selected - 1)
             case Keys.KEY_S:
                 self.selected = min(len(self.entries) - 1, self.selected + 1)
-            case Keys.KEY_ENTER:
+            case Keys.KEY_RETURN:
                 self.finished = True
             case _:
                 return False

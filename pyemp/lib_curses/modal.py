@@ -1,7 +1,6 @@
 """Modal Curses Popup"""
 
 import curses
-from .keys import Keys
 from .widget import Widget
 
 
@@ -41,8 +40,8 @@ class Modal(Widget):
             self.draw()
             ch = self.window.getch()
             for widget in self.widgets:
-                if widget.handle_input(ch):
-                    break
+                if not widget.handle_input(ch):
+                    continue
                 if widget.has_finished():
                     return
 

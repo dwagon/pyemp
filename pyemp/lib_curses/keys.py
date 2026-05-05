@@ -14,7 +14,8 @@ class Keys:
     KEY_B = ord("b")
     KEY_D = ord("d")
     KEY_DOWN = curses.KEY_DOWN
-    KEY_ENTER = ord("\n")
+    KEY_RETURN = ord("\n")
+    KEY_ENTER = curses.KEY_ENTER
     KEY_ESC = curses.ascii.ESC
     KEY_G = ord("g")
     KEY_J = ord("j")
