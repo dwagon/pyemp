@@ -4,14 +4,14 @@ import curses
 
 from pyemp.game import Game
 
-CONFIG = {"server": "localhost", "port": 6665, "country": "1", "password": "1"}
+CONFIG = {"server": "localhost", "port": 6665, "country": "2", "password": "2"}
 
 
 #######################################################################################
 def main(stdscr: curses.window):
     """Main"""
     game = Game(CONFIG, stdscr)
-    game.login()
+    game.initialise_data()
     game.main_loop()
 
 

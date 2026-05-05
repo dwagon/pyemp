@@ -55,8 +55,9 @@ def setup_socket(server: str = "localhost", port: int = 6665) -> emp_sock:
 
 #######################################################################################
 def log(msg: str) -> None:
-    with open("/tmp/empire_log", "a", encoding="utf-8") as log:
-        print(f"{time.ctime()}: {msg}", file=log)
+    """Add something to the empire log"""
+    with open("/tmp/empire_log", "a", encoding="utf-8") as logfh:
+        print(f"{time.ctime()}: {msg}", file=logfh)
 
 
 #######################################################################################
