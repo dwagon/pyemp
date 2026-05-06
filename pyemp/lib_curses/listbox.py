@@ -1,6 +1,7 @@
 """List of entries"""
 
 import curses
+from typing import Optional
 from collections import namedtuple
 from .widget import Widget
 from .keys import Keys
@@ -19,8 +20,31 @@ class Listbox(Widget):
     def __init__(self, parent: curses.window, begin_y: int, begin_x: int):
         super().__init__(parent, begin_y, begin_x)
         self.entries: list[ENTRY] = []
-        self.selected = 0
+        self.selected: Optional[int] = 0
+        self.finished = False
         self.window = parent.derwin(0, 0, begin_y, begin_x)
+        self.bindings = self.BINDINGS
+
+    ###################################################################################
+    def option_prev(self) -> None:
+        """Previous option"""
+        self.selected = max(0, self.selected - 1)
+
+    ###################################################################################
+    def option_next(self) -> None:
+        """Next option"""
+        self.selected = min(len(self.entries) - 1, self.selected + 1)
+
+    ###################################################################################
+    def option_select(self) -> None:
+        """Select this option"""
+        self.finished = True
+
+    ###################################################################################
+    def option_escape(self) -> None:
+        """Quit without selecting anything"""
+        self.selected = None
+        self.finished = True
 
     ###################################################################################
     def add_entry(self, val: str, entry: str):
@@ -45,9 +69,11 @@ class Listbox(Widget):
             self.window.addstr(y, 0, line.label, attr)
 
     ###################################################################################
-    def get(self) -> str:
+    def get(self) -> Optional[str]:
         """Return the value selected"""
-        return self.entries[self.selected].value
+        if self.selected:
+            return self.entries[self.selected].value
+        return None
 
     ###################################################################################
     def has_finished(self) -> bool:
@@ -55,18 +81,17 @@ class Listbox(Widget):
         return self.finished
 
     ###################################################################################
-    def handle_input(self, ch: int) -> bool:
-        """Handle keys"""
-        match ch:
-            case Keys.KEY_W:
-                self.selected = max(0, self.selected - 1)
-            case Keys.KEY_S:
-                self.selected = min(len(self.entries) - 1, self.selected + 1)
-            case Keys.KEY_RETURN:
-                self.finished = True
-            case _:
-                return False
-        return True
+    BINDINGS = {
+        Keys.KEY_W: option_prev,
+        Keys.KEY_J: option_prev,
+        Keys.KEY_UP: option_prev,
+        Keys.KEY_S: option_next,
+        Keys.KEY_K: option_next,
+        Keys.KEY_DOWN: option_next,
+        Keys.KEY_RETURN: option_select,
+        Keys.KEY_ENTER: option_select,
+        Keys.KEY_ESC: option_escape,
+    }
 
 
 # EOF

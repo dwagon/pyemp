@@ -18,10 +18,6 @@ class Label(Widget):
         """Draw the label"""
         self.parent.addstr(self.begin_y, self.begin_x, self.label)
 
-    def handle_input(self, ch: int) -> bool:
-        """Labels don't listen to inputs"""
-        return False
-
     def has_finished(self) -> bool:
         """Labels don't finish"""
         return False

@@ -38,10 +38,10 @@ class Modal(Widget):
         """Event loop for modal box"""
         while True:
             self.draw()
-            ch = self.window.getch()
+            # If you do window.getch() it can't handle escape sequences for unknown reasons
+            ch = self.parent.getch()
             for widget in self.widgets:
-                if not widget.handle_input(ch):
-                    continue
+                widget.handle_input(ch)
                 if widget.has_finished():
                     return
 
