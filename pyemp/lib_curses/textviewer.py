@@ -1,4 +1,4 @@
-"""Simple String Label Widget"""
+"""Viewer of multi-line text"""
 
 from typing import Any
 
@@ -8,24 +8,21 @@ from .widget import Widget
 #######################################################################################
 #######################################################################################
 #######################################################################################
-class Label(Widget):
-    """Label Widget"""
+class TextViewer(Widget):
+    """Text Viewer Widget"""
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
-        self.text = kwargs.get("text", "")
+        self.text: list[str] = []
 
-    def draw(self):
-        """Draw the label"""
-        self.parent.addstr(self.begin_y, self.begin_x, self.text)
-
-    def has_finished(self) -> bool:
-        """Labels don't finish"""
-        return False
-
-    def set_text(self, text: str):
-        """Set the text"""
+    def set_text(self, text: list[str]):
+        """Set the text to display"""
         self.text = text
+
+    def draw(self) -> None:
+        """Draw the text"""
+        for y, line in enumerate(self.text, self.begin_y):
+            self.parent.addstr(y, self.begin_x, line)
 
 
 # EOF

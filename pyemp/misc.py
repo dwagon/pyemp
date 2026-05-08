@@ -2,8 +2,8 @@
 
 from comms import emp_sock
 from pyemp.commands import cmd_vers, cmd_dump, cmd_bmap
-from pyemp.sector import Sector
 from pyemp.map_data import MapData
+from pyemp.sector import Sector
 
 
 ###################################################################################

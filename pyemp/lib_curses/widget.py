@@ -1,6 +1,5 @@
 """Parent class for widgets"""
 
-import curses
 from typing import Callable, Any, Self
 
 
@@ -10,10 +9,13 @@ from typing import Callable, Any, Self
 class Widget:
     """Generic Widget Class"""
 
-    def __init__(self, parent: curses.window, begin_y: int, begin_x: int):
-        self.parent = parent
-        self.begin_y = begin_y
-        self.begin_x = begin_x
+    def __init__(self, **kwargs: Any):
+        self.begin_y = kwargs.get("begin_y")
+        self.begin_x = kwargs.get("begin_x")
+        self.root = kwargs.get("root")
+        self.parent = kwargs.get("parent")
+        if not self.root:
+            self.root = self.parent
         self.bindings: dict[Any, Callable[[Self], None]] = {}
 
     def draw(self) -> None:
@@ -28,7 +30,7 @@ class Widget:
 
     def has_finished(self) -> bool:
         """Has the widget finished doing its thing"""
-        raise NotImplementedError
+        return False
 
 
 # EOF

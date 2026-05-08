@@ -1,10 +1,11 @@
 """List of entries"""
 
 import curses
-from typing import Optional
 from collections import namedtuple
-from .widget import Widget
+from typing import Optional
+
 from .keys import Keys
+from .widget import Widget
 
 #######################################################################################
 ENTRY = namedtuple("entry", ["value", "label"])

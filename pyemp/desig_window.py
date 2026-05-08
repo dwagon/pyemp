@@ -1,12 +1,13 @@
 """Designate Sector code"""
 
 import curses
-from .lib_curses.modal import Modal
-from .lib_curses.listbox import Listbox
+from typing import Optional
+
+from .lib_curses.container import Container
 from .lib_curses.label import Label
+from .lib_curses.listbox import Listbox
 from .lib_curses.widget import Widget
 from .sector import DESIG_KEY_MAP
-from .misc import debug
 
 
 #######################################################################################
@@ -34,7 +35,7 @@ class Desig_Window:
         self.ncols = ncols
         self.widgets: list[Widget] = []
         self.new_desig: str = ""
-        self.modal = Modal(
+        self.container = Container(
             self.parent_window, self.nlines, self.ncols, self.begin_y, self.begin_x
         )
         self.listbox = None
@@ -43,31 +44,31 @@ class Desig_Window:
     ###################################################################################
     def init_widgets(self):
         """Add widgets"""
-        self.listbox = Listbox(self.modal.window, 3, 1)
+        self.listbox = Listbox(self.container.window, 3, 1)
         for desig, descr in DESIG_KEY_MAP.items():
             if desig in ("?", ".", "^", "s", "-", "~", "\\"):  # Can't be designated as
                 continue
             self.listbox.add_entry(desig, f"{desig} {descr}")
-        self.modal.add_widget(
+        self.container.add_widget(
             Label(
-                self.modal.window,
+                self.container.window,
                 1,
                 1,
                 f"Designate Sector ({self.x}, {self.y})",
             ),
         )
-        self.modal.add_widget(self.listbox)
+        self.container.add_widget(self.listbox)
 
     ###################################################################################
     def mainloop(self):
         """Event loop"""
 
-        self.modal.mainloop()
+        self.container.mainloop()
         ans = self.listbox.get()
         self.new_desig = ans
 
     ###################################################################################
-    def get(self) -> str:
+    def get(self) -> Optional[str]:
         """Return result"""
         return self.new_desig
 

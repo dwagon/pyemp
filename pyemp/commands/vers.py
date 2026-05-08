@@ -1,7 +1,8 @@
 """Handle vers output"""
 
-from typing import Any
 import re
+from typing import Any
+
 from pyemp.comms import emp_sock
 
 

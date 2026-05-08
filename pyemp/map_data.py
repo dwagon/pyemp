@@ -1,6 +1,7 @@
 """Structure containing all the map data"""
 
 from typing import Self
+
 from pyemp.sector import Sector
 
 
