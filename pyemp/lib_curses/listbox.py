@@ -19,7 +19,7 @@ class Listbox(Widget):
 
     ###################################################################################
     def __init__(self, parent: curses.window, begin_y: int, begin_x: int):
-        super().__init__(parent, begin_y, begin_x)
+        super().__init__(parent=parent, begin_y=begin_y, begin_x=begin_x)
         self.entries: list[ENTRY] = []
         self.selected: Optional[int] = 0
         self.finished = False

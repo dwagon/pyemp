@@ -4,6 +4,7 @@ import curses
 from typing import Any
 
 from .widget import Widget
+from ..misc import debug
 
 
 #######################################################################################
@@ -22,11 +23,11 @@ class Container(Widget):
         self.ncols: int = kwargs.get("ncols")
         self.begin_x: int = kwargs.get("begin_x", 0)
         self.begin_y: int = kwargs.get("begin_y", 0)
-        self.parent: curses.window
         self.window = self.parent.derwin(
             self.nlines, self.ncols, self.begin_y, self.begin_x
         )
         self.border = kwargs.get("border", False)
+        self.bindings = kwargs.get("bindings", {})
 
         self._widgets = []
 
@@ -70,6 +71,11 @@ class Container(Widget):
             self.draw()
             # If you do window.getch() it can't handle escape sequences for unknown reasons
             ch = self.parent.getch()
+            if ch == curses.KEY_MOUSE:
+                self.handle_mouse()
+                for widget in self._widgets:
+                    widget.handle_mouse()
+            self.handle_input(ch)
             for widget in self._widgets:
                 widget.handle_input(ch)
             if self.has_finished():

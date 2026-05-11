@@ -13,8 +13,9 @@ from pyemp.sector import Sector, desig_name
 class DataWindow(Container):
     """Window for displaying data"""
 
-    def __init__(self, **kwargs):
+    def __init__(self, game, **kwargs):
         super().__init__(**kwargs)
+        self.game = game
         self.widgets: dict[str, Widget] = {}
         self.widgets["hex"] = Label(begin_y=1, begin_x=1, text="Hex -, -")
         self.widgets["desig"] = Label(begin_y=2, begin_x=1, text="")

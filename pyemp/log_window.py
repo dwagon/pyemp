@@ -9,8 +9,9 @@ from pyemp.lib_curses import Container, TextViewer
 class LogWindow(Container):
     """Window for displaying logs"""
 
-    def __init__(self, **kwargs):
+    def __init__(self, game, **kwargs):
         super().__init__(**kwargs)
+        self.game = game
         self.log_display = TextViewer(**kwargs)
         self.add_widget(self.log_display)
 

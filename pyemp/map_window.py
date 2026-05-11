@@ -2,7 +2,7 @@
 
 import curses
 
-from pyemp.lib_curses import Container, TextViewer
+from pyemp.lib_curses import Container, TextViewer, Keys
 
 
 #######################################################################################
@@ -11,8 +11,9 @@ from pyemp.lib_curses import Container, TextViewer
 class MapWindow(Container):
     """Window for displaying map data"""
 
-    def __init__(self, **kwargs):
+    def __init__(self, game, **kwargs):
         super().__init__(**kwargs)
+        self.game = game
         self.map_display = TextViewer(begin_x=1, begin_y=1)
         self.border = True
         self.world_x = kwargs.get("world_x")
@@ -21,12 +22,53 @@ class MapWindow(Container):
         self.add_widget(self.map_display)
         self.x = 0
         self.y = 0
+        self.bindings = {
+            Keys.KEY_G: self.move_left,
+            Keys.KEY_J: self.move_right,
+            Keys.KEY_Y: self.move_up_left,
+            Keys.KEY_U: self.move_up_right,
+            Keys.KEY_B: self.move_down_left,
+            Keys.KEY_N: self.move_down_right,
+        }
 
     ###################################################################################
-    def update(self, x: int, y: int):
+    def get_coords(self) -> tuple[int, int]:
         """Set the coords we are looking at"""
-        self.x = x
-        self.y = y
+        return self.x, self.y
+
+    ###################################################################################
+    def move_left(self) -> None:
+        """move cursor left in map"""
+        self.x -= 2
+
+    ###################################################################################
+    def move_right(self) -> None:
+        """move cursor right in map"""
+        self.x += 2
+
+    ###################################################################################
+    def move_up_left(self) -> None:
+        """move cursor up and left in map"""
+        self.x -= 1
+        self.y -= 1
+
+    ###################################################################################
+    def move_up_right(self) -> None:
+        """move cursor up and right in map"""
+        self.x += 1
+        self.y -= 1
+
+    ###################################################################################
+    def move_down_left(self) -> None:
+        """move cursor down and left in map"""
+        self.x -= 1
+        self.y += 1
+
+    ###################################################################################
+    def move_down_right(self) -> None:
+        """move cursor down and right in map"""
+        self.x += 1
+        self.y += 1
 
     ###################################################################################
     def draw(self):
