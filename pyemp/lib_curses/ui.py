@@ -44,6 +44,7 @@ class UI:
         """Event loop for curses"""
         self.layout()
         while True:
+            self.stdscr.clear()
             for widget in self._widgets.values():
                 widget.draw()
             curses.doupdate()

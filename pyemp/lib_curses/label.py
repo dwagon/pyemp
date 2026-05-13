@@ -13,15 +13,30 @@ class Label(Widget):
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
-        self.text = kwargs.get("text", "")
+        self.text = kwargs.get("text", "XXXXXXXX")
 
+    ###################################################################################
     def draw(self):
         """Draw the label"""
-        self.parent.addstr(self.begin_y, self.begin_x, self.text)
+        super().draw()
+        self.window.addstr(self.text)
 
+    ###################################################################################
     def set_text(self, text: str):
         """Set the text"""
         self.text = text
+
+    ###################################################################################
+    @property
+    def height(self) -> int:
+        """height of widget"""
+        return 1
+
+    ###################################################################################
+    @property
+    def width(self) -> int:
+        """width of widget"""
+        return len(self.text) + 1
 
 
 # EOF
