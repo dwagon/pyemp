@@ -19,10 +19,6 @@ class Label(Widget):
         """Draw the label"""
         self.parent.addstr(self.begin_y, self.begin_x, self.text)
 
-    def has_finished(self) -> bool:
-        """Labels don't finish"""
-        return False
-
     def set_text(self, text: str):
         """Set the text"""
         self.text = text

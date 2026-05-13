@@ -16,36 +16,33 @@ class DataWindow(Container):
     def __init__(self, game, **kwargs):
         super().__init__(**kwargs)
         self.game = game
-        self.widgets: dict[str, Widget] = {}
-        self.widgets["hex"] = Label(begin_y=1, begin_x=1, text="Hex -, -")
-        self.widgets["desig"] = Label(begin_y=2, begin_x=1, text="")
-        self.widgets["pop"] = Label(begin_y=3, begin_x=1, text="")
-        self.widgets["resource"] = Label(begin_y=4, begin_x=1, text="")
-        self.widgets["details"] = TextViewer(begin_y=6, begin_x=1, text="")
-        for w in self.widgets.values():
-            self.add_widget(w)
+        self.hex_label = self.add("hex", Label(begin_y=1, begin_x=1, text="Hex -, -"))
+        self.desig_label = self.add("desig", Label(begin_y=2, begin_x=1, text=""))
+        self.pop_label = self.add("pop", Label(begin_y=3, begin_x=1, text=""))
+        self.resource_label = self.add("resource", Label(begin_y=4, begin_x=1, text=""))
+        self.details = self.add("details", TextViewer(begin_y=6, begin_x=1, text=""))
 
     ###################################################################################
     def update(self, x: int, y: int, mapdata: MapData):
         """Update details"""
-        self.widgets["hex"].set_text(f"Hex {x}, {y}")
+        self.hex_label.set_text(f"Hex {x}, {y}")
         if (x, y) not in mapdata:
             return
         m = mapdata[(x, y)]
         des_str = get_desig_str(m)
-        self.widgets["desig"].set_text(des_str)
+        self.desig_label.set_text(des_str)
         if m.civ is None:
             return
-        self.widgets["pop"].set_text(
+        self.pop_label.set_text(
             f"Civs: {m.civ}/{m.c_dist}, UW: {m.uw}/{m.u_dist}, Mil: {m.mil}/{m.m_dist}",
         )
 
-        self.widgets["resource"].set_text(
+        self.resource_label.set_text(
             f"Resource: Iron: {m.min}, Gold: {m.gold}, "
             f"Fert: {m.fert}, Oil: {m.ocontent}, Uranium {m.uran}"
         )
         table = distribution_details_table(m).splitlines()
-        self.widgets["details"].set_text(table)
+        self.details.set_text(table)
 
 
 ###################################################################################

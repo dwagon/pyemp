@@ -3,6 +3,7 @@
 import curses
 import sys
 from pyemp.comms import setup_socket
+from pyemp.lib_curses import UI
 from pyemp.data_window import DataWindow
 from pyemp.button_bar import ButtonBar
 from pyemp.lib_curses import Container, Keys
@@ -19,7 +20,7 @@ class Game:
     """Game Object"""
 
     def __init__(self, config: dict[str, int | str], stdscr: curses.window):
-        self.stdscr = stdscr
+        self.ui = UI(stdscr)
 
         self.config = config
         self.map = MapData()
@@ -52,59 +53,59 @@ class Game:
         half_way = cols // 2
         log_height = 7
         button_height = 3
-
-        curses.mousemask(curses.ALL_MOUSE_EVENTS)
-        curses.curs_set(0)  # Invisible cursor
-        self.stdscr.keypad(True)
-
-        self.base_container = Container(
-            root=self.stdscr,
-            parent=self.stdscr,
-            nlines=lines,
-            ncols=cols,
-            bindings={Keys.KEY_Q: self.quit},
+        self.ui.add(
+            "base",
+            Container(
+                nlines=lines,
+                ncols=cols,
+                bindings={Keys.KEY_Q: self.quit},
+            ),
         )
 
-        self.map_win = MapWindow(
-            self,
-            parent=self.base_container,
-            nlines=lines - log_height - button_height,
-            ncols=half_way,
-            border=True,
-            world_x=self.config["WORLD_X"],
-            world_y=self.config["WORLD_Y"],
-            map=self.map,
+        self.ui.add(
+            "map",
+            MapWindow(
+                self,
+                nlines=lines - log_height - button_height,
+                ncols=half_way,
+                border=True,
+                world_x=self.config["WORLD_X"],
+                world_y=self.config["WORLD_Y"],
+                map=self.map,
+            ),
         )
-        self.data_win = DataWindow(
-            self,
-            parent=self.base_container,
-            begin_y=0,
-            begin_x=half_way + 1,
-            nlines=lines - log_height - button_height,
-            ncols=half_way - 1,
-            border=True,
+        self.ui.add(
+            "data",
+            DataWindow(
+                self,
+                begin_y=0,
+                begin_x=half_way + 1,
+                nlines=lines - log_height - button_height,
+                ncols=half_way - 1,
+                border=True,
+            ),
         )
-        self.log_win = LogWindow(
-            self,
-            parent=self.base_container,
-            begin_y=lines - log_height,
-            begin_x=0,
-            nlines=log_height,
-            ncols=cols,
-            border=True,
+        self.ui.add(
+            "log",
+            LogWindow(
+                self,
+                begin_y=lines - log_height,
+                begin_x=0,
+                nlines=log_height,
+                ncols=cols,
+                border=True,
+            ),
         )
-        self.button_bar = ButtonBar(
-            self,
-            parent=self.base_container,
-            begin_y=lines - log_height - button_height,
-            begin_x=0,
-            nlines=button_height,
-            ncols=cols,
+        self.ui.add(
+            "buttons",
+            ButtonBar(
+                self,
+                begin_y=lines - log_height - button_height,
+                begin_x=0,
+                nlines=button_height,
+                ncols=cols,
+            ),
         )
-        self.base_container.add_widget(self.map_win)
-        self.base_container.add_widget(self.data_win)
-        self.base_container.add_widget(self.log_win)
-        self.base_container.add_widget(self.button_bar)
 
     ###################################################################################
     def quit(self) -> None:
@@ -128,7 +129,7 @@ class Game:
     def main_loop(self) -> None:
         """Main event loop"""
         self.refresh_screen()
-        self.base_container.mainloop()
+        self.ui.mainloop()
 
 
 # EOF

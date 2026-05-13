@@ -11,4 +11,6 @@ from .keys import Keys
 from .label import Label
 from .listbox import Listbox
 from .textviewer import TextViewer
+from .ui import UI
 from .widget import Widget
+from .window import Window

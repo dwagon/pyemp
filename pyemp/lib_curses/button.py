@@ -4,7 +4,6 @@ import curses
 from typing import Optional, Callable, Any
 from .widget import Widget
 from .mouse_events import MouseEvent
-from ..misc import debug
 
 
 #######################################################################################
@@ -22,6 +21,7 @@ class Button(Widget):
         self.window: curses.window
         self.mouse_bindings = {MouseEvent.BUTTON1_CLICKED: self.clicked}
 
+    ###################################################################################
     def draw(self):
         """Draw the button"""
         self.window.border()
@@ -31,15 +31,16 @@ class Button(Widget):
             self.label,
         )
 
+    ###################################################################################
     def clicked(self, x: int, y: int):
         """Button was selected"""
         y1, x1 = self.window.getbegyx()
         y2, x2 = self.window.getmaxyx()
         if x1 < x < x2 and y1 < y < y2:
-            debug(f"{self} button clicked({x=}, {y=}) {y1=}, {x1=}, {y2=}, {x2=}")
             if self.callback:
                 self.callback()
 
+    ###################################################################################
     def is_clicked(self, mouse_y: int, mouse_x: int) -> bool:
         """Did the user click on the button"""
         # min_y, min_x = self.window.getbegyx()
@@ -48,16 +49,19 @@ class Button(Widget):
         #     return True
         # return False
 
+    ###################################################################################
     @property
     def width(self) -> int:
         """Width of the button"""
         return len(self.label) + 2 if self.border else 0
 
+    ###################################################################################
     @property
     def height(self) -> int:
         """Height of the button"""
         return 1 + 2 if self.border else 0
 
+    ###################################################################################
     def __repr__(self):
         return f"<Button {self.label}>"
 

@@ -4,7 +4,6 @@ import curses
 from typing import Any
 
 from .widget import Widget
-from ..misc import debug
 
 
 #######################################################################################
@@ -18,18 +17,57 @@ class Container(Widget):
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
-        self.parent: curses.window = kwargs["parent"]
-        self.nlines: int = kwargs.get("nlines")
-        self.ncols: int = kwargs.get("ncols")
+        self.nlines: int = kwargs.get(
+            "nlines", curses.LINES  # pylint: disable=no-member
+        )
+        self.ncols: int = kwargs.get("ncols", curses.COLS)  # pylint: disable=no-member
         self.begin_x: int = kwargs.get("begin_x", 0)
         self.begin_y: int = kwargs.get("begin_y", 0)
-        self.window = self.parent.derwin(
+        self.window = None
+        self.border_window = None
+        self.border = kwargs.get("border", False)
+
+        self._widgets: dict[str, Widget] = {}
+
+    ###################################################################################
+    def layout(self):
+        """Setup - outer canvas for borders,etc, inner canvas for widgets"""
+        self.border_window = self.parent.derwin(
             self.nlines, self.ncols, self.begin_y, self.begin_x
         )
-        self.border = kwargs.get("border", False)
-        self.bindings = kwargs.get("bindings", {})
+        nlines, ncols, begin_y, begin_x = self.padded_size()
+        self.window = self.border_window.derwin(nlines, ncols, begin_y, begin_x)
+        for widget in self._widgets.values():
+            widget.parent = self.window
+            widget.parent.move(begin_y, begin_x)
+            widget.layout()
 
-        self._widgets = []
+    ###################################################################################
+    def padded_size(self) -> tuple[int, int, int, int]:
+        """How big the inner canvas should be based on the borders"""
+        nlines = self.nlines
+        ncols = self.ncols
+        begin_y = self.begin_y
+        begin_x = self.begin_x
+        if self.border:
+            nlines -= 2
+            ncols -= 2
+            begin_y += 1
+            begin_x += 1
+
+        return nlines, ncols, begin_y, begin_x
+
+    ###################################################################################
+    def add(self, name: str, widget: Widget) -> Widget:
+        """Add a widget to the container"""
+        self._widgets[name] = widget
+        self._widgets[name].name = name
+        return widget
+
+    ###################################################################################
+    def delete(self, name: str):
+        """Remove a widget from the container"""
+        del self._widgets[name]
 
     ###################################################################################
     def derwin(self, *args, **kwargs):
@@ -42,44 +80,14 @@ class Container(Widget):
         return self.nlines, self.ncols
 
     ###################################################################################
-    def add_widget(self, widget: Widget):
-        """Add a widget"""
-        self._widgets.append(widget)
-        widget.parent = self.window
-
-    ###################################################################################
     def draw(self):
         """Draw the window"""
         self.window.clear()
         if self.border:
-            self.window.border()
-        for widget in self._widgets:
+            self.border_window.border()
+        for widget in self._widgets.values():
             widget.draw()
         self.window.refresh()
-
-    ###################################################################################
-    def has_finished(self) -> bool:
-        for widget in self._widgets:
-            if widget.has_finished():
-                return True
-        return False
-
-    ###################################################################################
-    def mainloop(self):
-        """Event loop for modal box"""
-        while True:
-            self.draw()
-            # If you do window.getch() it can't handle escape sequences for unknown reasons
-            ch = self.parent.getch()
-            if ch == curses.KEY_MOUSE:
-                self.handle_mouse()
-                for widget in self._widgets:
-                    widget.handle_mouse()
-            self.handle_input(ch)
-            for widget in self._widgets:
-                widget.handle_input(ch)
-            if self.has_finished():
-                return
 
 
 # EOF

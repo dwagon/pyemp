@@ -12,8 +12,7 @@ class LogWindow(Container):
     def __init__(self, game, **kwargs):
         super().__init__(**kwargs)
         self.game = game
-        self.log_display = TextViewer(**kwargs)
-        self.add_widget(self.log_display)
+        self.log_display = self.add("log display", TextViewer(**kwargs))
 
     def update(self, log_buffer: list[str]):
         """Update the logs"""

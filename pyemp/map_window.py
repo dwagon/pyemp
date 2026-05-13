@@ -14,12 +14,11 @@ class MapWindow(Container):
     def __init__(self, game, **kwargs):
         super().__init__(**kwargs)
         self.game = game
-        self.map_display = TextViewer(begin_x=1, begin_y=1)
         self.border = True
         self.world_x = kwargs.get("world_x")
         self.world_y = kwargs.get("world_y")
         self.map = kwargs.get("map")
-        self.add_widget(self.map_display)
+        self.add("display", TextViewer(begin_x=1, begin_y=1))
         self.x = 0
         self.y = 0
         self.bindings = {
