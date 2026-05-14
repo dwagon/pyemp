@@ -1,10 +1,11 @@
 """List of entries"""
 
 import curses
-from typing import Optional
 from collections import namedtuple
-from .widget import Widget
+from typing import Optional
+
 from .keys import Keys
+from .widget import Widget
 
 #######################################################################################
 ENTRY = namedtuple("entry", ["value", "label"])
@@ -18,10 +19,9 @@ class Listbox(Widget):
 
     ###################################################################################
     def __init__(self, parent: curses.window, begin_y: int, begin_x: int):
-        super().__init__(parent, begin_y, begin_x)
+        super().__init__(parent=parent, begin_y=begin_y, begin_x=begin_x)
         self.entries: list[ENTRY] = []
         self.selected: Optional[int] = 0
-        self.finished = False
         self.window = parent.derwin(0, 0, begin_y, begin_x)
         self.bindings = self.BINDINGS
 
@@ -38,13 +38,12 @@ class Listbox(Widget):
     ###################################################################################
     def option_select(self) -> None:
         """Select this option"""
-        self.finished = True
+        # TODO
 
     ###################################################################################
     def option_escape(self) -> None:
         """Quit without selecting anything"""
         self.selected = None
-        self.finished = True
 
     ###################################################################################
     def add_entry(self, val: str, entry: str):
@@ -74,11 +73,6 @@ class Listbox(Widget):
         if self.selected:
             return self.entries[self.selected].value
         return None
-
-    ###################################################################################
-    def has_finished(self) -> bool:
-        """Has the user selected the value"""
-        return self.finished
 
     ###################################################################################
     BINDINGS = {

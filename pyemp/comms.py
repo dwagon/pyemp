@@ -1,7 +1,7 @@
 """Communications with the server"""
 
-import socket
 import select
+import socket
 import time
 from enum import StrEnum
 from typing import Generator
