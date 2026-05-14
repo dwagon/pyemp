@@ -38,8 +38,6 @@ class Game:
         self.initialise_data()
         self.init_windows()
 
-        print("DBG Game", file=open("/tmp/err", "w"))
-
     ###################################################################################
     def initialise_data(self):
         """Initialise game data"""
@@ -62,19 +60,18 @@ class Game:
             ),
         )
 
-        self.ui.add(
+        self.map_win = self.ui.add(
             "map",
             MapWindow(
                 self,
                 nlines=lines - log_height - button_height,
                 ncols=half_way,
-                border=True,
                 world_x=self.config["WORLD_X"],
                 world_y=self.config["WORLD_Y"],
                 map=self.map,
             ),
         )
-        self.ui.add(
+        self.data_win = self.ui.add(
             "data",
             DataWindow(
                 self,
@@ -82,10 +79,9 @@ class Game:
                 begin_x=half_way + 1,
                 nlines=lines - log_height - button_height,
                 ncols=half_way - 1,
-                border=True,
             ),
         )
-        self.ui.add(
+        self.log_win = self.ui.add(
             "log",
             LogWindow(
                 self,
@@ -123,7 +119,6 @@ class Game:
         self.x, self.y = self.map_win.get_coords()
         self.data_win.update(x=self.x, y=self.y, mapdata=self.map)
         self.log_win.update(self.log_buffer)
-        self.base_container.draw()
 
     ###################################################################################
     def main_loop(self) -> None:

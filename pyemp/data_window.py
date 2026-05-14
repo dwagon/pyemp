@@ -2,7 +2,7 @@
 
 import tabulate
 
-from pyemp.lib_curses import Container, Widget, Label, TextViewer
+from pyemp.lib_curses import Container, Label, TextViewer
 from pyemp.map_data import MapData
 from pyemp.sector import Sector, desig_name
 
@@ -16,6 +16,7 @@ class DataWindow(Container):
     def __init__(self, game, **kwargs):
         super().__init__(**kwargs)
         self.game = game
+        self.border = True
         self.hex_label = self.add("hex", Label(begin_y=1, begin_x=1, text="Hex -, -"))
         self.desig_label = self.add("desig", Label(begin_y=2, begin_x=1, text=""))
         self.pop_label = self.add("pop", Label(begin_y=3, begin_x=1, text=""))

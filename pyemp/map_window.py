@@ -72,6 +72,7 @@ class MapWindow(Container):
     ###################################################################################
     def draw(self):
         """Draw the map"""
+        super().draw()
         for a in range(-self.world_x // 2, self.world_x // 2):
             for b in range(-self.world_y // 2, self.world_y // 2):
                 if self.x == a and self.y == b:

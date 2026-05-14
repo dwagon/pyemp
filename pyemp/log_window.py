@@ -16,7 +16,7 @@ class LogWindow(Container):
 
     def update(self, log_buffer: list[str]):
         """Update the logs"""
-        max_y, _ = self.getmaxyx()
+        max_y, _ = self.window.getmaxyx()
         vert_size = max_y - 2  # How many lines we can display (2 for border)
 
         self.log_display.set_text(log_buffer[-vert_size:])
