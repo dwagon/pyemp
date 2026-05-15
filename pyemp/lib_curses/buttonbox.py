@@ -8,11 +8,20 @@ from .button import Button
 
 
 #######################################################################################
-class ButtonAlignment(Enum):
+class ButtonDirection(Enum):
     """Which direction to make buttons go"""
 
     HORIZONTAL = auto()
     VERTICAL = auto()
+
+
+#######################################################################################
+class ButtonAlignment(Enum):
+    """Alignment of buttons in box"""
+
+    LEFT = auto()
+    MIDDLE = auto()
+    RIGHT = auto()
 
 
 #######################################################################################
@@ -23,23 +32,72 @@ class ButtonBox(Container):
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
-        self.alignment: ButtonAlignment = kwargs.get(
-            "alignment", ButtonAlignment.HORIZONTAL
+        self.direction: ButtonDirection = kwargs.get(
+            "direction", ButtonDirection.HORIZONTAL
         )
-        self.tmp_x = 1 if self.border else 0
-        self.tmp_y = 1 if self.border else 0
+        self.alignment: ButtonAlignment = kwargs.get("alignment", ButtonAlignment.LEFT)
+        # Where the next button starts
+        self.tmp_button_x = 1 if self.border else 0
+        self.tmp_button_y = 1 if self.border else 0
 
     ###################################################################################
-    def add_button(self, button: Button):
-        """Add a button to the box"""
-        button.begin_x = self.tmp_x
-        button.begin_y = self.tmp_y
+    def layout(self):
+        """Layout buttons"""
+        x_need = self.get_buttons_width()
+        y_need = self.get_buttons_height()
+        self.debug(f"{self} {x_need=} {y_need=}")
+        if self.ncols < 0:
+            self.ncols = x_need + 1
+        if self.nlines < 0:
+            self.nlines = y_need + 1
+        self.debug(f"{self} {self.ncols=} {self.nlines=}")
+        super().layout()
 
-        self.add(f"button_{button.label}", button)
-        if self.alignment == ButtonAlignment.HORIZONTAL:
-            self.tmp_x += button.width
+    ###################################################################################
+    def get_buttons_width(self) -> int:
+        """Return the width of all the buttons"""
+        width = 0
+        for button in self._widgets.values():
+            if self.direction == ButtonDirection.HORIZONTAL:
+                width += button.width
+            else:
+                width = max(width, button.width)
+        return width
+
+    ###################################################################################
+    def get_buttons_height(self) -> int:
+        """Return the height of all the buttons"""
+        height = 0
+        for button in self._widgets.values():
+            if self.direction == ButtonDirection.VERTICAL:
+                height += button.height
+            else:
+                height = max(height, button.height)
+        return height
+
+    ###################################################################################
+    @property
+    def height(self) -> int:
+        """Height of the button box"""
+        return self.get_buttons_height()
+
+    ###################################################################################
+    @property
+    def width(self) -> int:
+        """Width of the button box"""
+        return self.get_buttons_width()
+
+    ###################################################################################
+    def add(self, name: str, widget: Button):
+        """Add a button to the box"""
+        widget.begin_x = self.tmp_button_x
+        widget.begin_y = self.tmp_button_y
+
+        super().add(name, widget)
+        if self.direction == ButtonDirection.HORIZONTAL:
+            self.tmp_button_x += widget.width
         else:
-            self.tmp_y += button.height
+            self.tmp_button_y += widget.height
 
 
 # EOF

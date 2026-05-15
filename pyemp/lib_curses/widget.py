@@ -37,7 +37,9 @@ class Widget:
     ###################################################################################
     def draw(self) -> None:
         """Draw the Widget"""
+        self.debug(f"{self} widget draw()")
         if self.border_window:
+            self.debug(f"{self} border draw")
             self.border_window.border()
 
     ###################################################################################
@@ -56,33 +58,37 @@ class Widget:
     def layout(self) -> None:
         """Create the curses implementation of the widget
         Happens after object creation and before drawing for the first time"""
+        self.debug(f"{self} layout")
         if self.border:
             self.layout_border_window()
         dimension = Dimension(self.nlines, self.ncols, self.begin_y, self.begin_x)
 
-        nlines, ncols, begin_y, begin_x = self.calc_window_size(
-            dimension, border_win=False
+        win_size = self.calc_window_size(dimension, border_win=False)
+        self.debug(f"{self} layout {win_size=}")
+        self.window = self.parent.derwin(
+            win_size.nlines, win_size.ncols, win_size.begin_y, win_size.begin_x
         )
-        self.window = self.parent.derwin(nlines, ncols, begin_y, begin_x)
+        self.debug(f"{self} layout over")
 
     ###################################################################################
     def layout_border_window(self):
         """If there is a border then lay it out as a new window"""
         dimension = Dimension(self.nlines, self.ncols, self.begin_y, self.begin_x)
-
-        b_nlines, b_ncols, b_begin_y, b_begin_x = self.calc_window_size(
-            dimension, border_win=True
+        self.debug(f"{self} layout_border_window {dimension=}")
+        win_size = self.calc_window_size(dimension, border_win=True)
+        self.debug(f"{self} layout_border_window {win_size=}")
+        self.border_window = self.parent.derwin(
+            win_size.nlines, win_size.ncols, win_size.begin_y, win_size.begin_x
         )
-
-        self.border_window = self.parent.derwin(b_nlines, b_ncols, b_begin_y, b_begin_x)
 
     ###################################################################################
     def calc_window_size(self, dimension: Dimension, border_win=False) -> Dimension:
         """How big the inner canvas should be based on the borders"""
 
         nlines, ncols, begin_y, begin_x = dimension
-        nlines = self.calculate_height(border_win)
-        ncols = self.calculate_width(border_win)
+        self.debug(f"{self} calc_window_size({dimension=}, {border_win=})")
+        nlines = self.calculate_height(dimension.nlines, border_win)
+        ncols = self.calculate_width(dimension.ncols, border_win)
 
         if not border_win and self.border:
             begin_y += 1
@@ -91,31 +97,31 @@ class Widget:
         return Dimension(nlines, ncols, begin_y, begin_x)
 
     ###################################################################################
-    def calculate_height(self, border_win: bool = False) -> int:
+    def calculate_height(self, requested: int, border_win: bool = False) -> int:
         """Height to use"""
-        requested = self.height
-        nrows = requested
+        nrows = requested if requested > 0 else self.height
         max_height = self.avail_height()
-        if border_win:
-            nrows += 2
+        self.debug(f"{self} calculate_height {requested=} {max_height=} {border_win=}")
         if nrows < 0:
             nrows = max_height
+        # elif border_win:
+        #     nrows += 2
         if nrows > max_height:
-            raise ScreenTooSmall(self.name + " height", requested, max_height)
+            raise ScreenTooSmall(self.name + " height", nrows, max_height)
         return nrows
 
     ###################################################################################
-    def calculate_width(self, border_win: bool = False) -> int:
+    def calculate_width(self, requested: int, border_win: bool = False) -> int:
         """Width to use"""
-        requested = self.width
-        ncols = requested
+        ncols = requested if requested > 0 else self.width
         max_width = self.avail_width()
-        if border_win:
-            ncols += 2
+        self.debug(f"{self} calculate_width {requested=} {max_width=} {border_win=}")
         if ncols < 0:
             ncols = max_width
+        # if border_win:
+        #     ncols += 2
         if ncols > max_width:
-            raise ScreenTooSmall(self.name + " width", requested, max_width)
+            raise ScreenTooSmall(self.name + " width", ncols, max_width)
         return ncols
 
     ###################################################################################
@@ -134,6 +140,7 @@ class Widget:
     def handle_input(self, key: int) -> None:
         """Handle character input"""
         if key in self.bindings:
+            self.debug(f"{self} handle_input({key=})")
             return self.bindings[key]()
         return None
 

@@ -1,6 +1,5 @@
 """Curses based button"""
 
-import curses
 from typing import Optional, Callable, Any
 from .widget import Widget
 from .mouse_events import MouseEvent
@@ -18,18 +17,13 @@ class Button(Widget):
         self.value = kwargs.get("value", "")
         self.callback: Optional[Callable[[], None]] = kwargs.get("callback", None)
         self.border: bool = kwargs.get("border", True)
-        self.window: curses.window
         self.mouse_bindings = {MouseEvent.BUTTON1_CLICKED: self.clicked}
 
     ###################################################################################
     def draw(self):
         """Draw the button"""
-        self.window.border()
-        self.window.addstr(
-            1 if self.border else 0,
-            1 if self.border else 0,
-            self.label,
-        )
+        super().draw()
+        self.window.addstr(0, 0, self.label)
 
     ###################################################################################
     def clicked(self, x: int, y: int):
@@ -53,13 +47,13 @@ class Button(Widget):
     @property
     def width(self) -> int:
         """Width of the button"""
-        return len(self.label) + 2 if self.border else 0
+        return len(self.label) + (2 if self.border else 0)
 
     ###################################################################################
     @property
     def height(self) -> int:
         """Height of the button"""
-        return 1 + 2 if self.border else 0
+        return 1 + (2 if self.border else 0)
 
     ###################################################################################
     def __repr__(self):

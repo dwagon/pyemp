@@ -1,7 +1,7 @@
 """Curses UI"""
 
 import curses
-from typing import Any, Optional
+from typing import Optional
 from .widget import Widget
 
 
@@ -73,6 +73,12 @@ class UI:
     def has_finished(self) -> bool:
         """Has the widget finished doing its thing"""
         return False
+
+    ###################################################################################
+    def debug(self, msg: str):
+        """Debug log"""
+        with open("/tmp/widget_err", "a", encoding="utf-8") as outfh:
+            outfh.write(f"UI: {msg}\n")
 
 
 # EOF
