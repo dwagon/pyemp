@@ -1,6 +1,5 @@
 """Curses based button"""
 
-import curses
 from typing import Optional, Callable, Any
 from .widget import Widget
 from .mouse_events import MouseEvent
@@ -48,13 +47,13 @@ class Button(Widget):
     @property
     def width(self) -> int:
         """Width of the button"""
-        return len(self.label) + 1
+        return len(self.label) + (2 if self.border else 0)
 
     ###################################################################################
     @property
     def height(self) -> int:
         """Height of the button"""
-        return 1
+        return 1 + (2 if self.border else 0)
 
     ###################################################################################
     def __repr__(self):
