@@ -50,6 +50,22 @@ class Container(Widget):
     #     return self.nlines, self.ncols
 
     ###################################################################################
+    @property
+    def height(self) -> int:
+        """height of container"""
+        h = max(_.height for _ in self._widgets.values())
+        self.debug(f"{self} height={h}")
+        return h
+
+    ###################################################################################
+    @property
+    def width(self) -> int:
+        """width of container"""
+        w = max(_.width for _ in self._widgets.values())
+        self.debug(f"{self} width={w}")
+        return w
+
+    ###################################################################################
     def draw(self):
         """Draw the window"""
         super().draw()

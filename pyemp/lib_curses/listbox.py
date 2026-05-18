@@ -22,7 +22,6 @@ class Listbox(Widget):
         super().__init__(parent=parent, begin_y=begin_y, begin_x=begin_x)
         self.entries: list[ENTRY] = []
         self.selected: Optional[int] = 0
-        self.window = parent.derwin(0, 0, begin_y, begin_x)
         self.bindings = self.BINDINGS
 
     ###################################################################################
@@ -59,7 +58,6 @@ class Listbox(Widget):
     ###################################################################################
     def draw(self):
         """Draw the widget"""
-        self.window.clear()
         for y, line in enumerate(self.entries):
             if y == self.selected:
                 attr = curses.A_REVERSE
