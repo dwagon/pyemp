@@ -37,19 +37,18 @@ class ButtonBox(Container):
         )
         self.alignment: ButtonAlignment = kwargs.get("alignment", ButtonAlignment.LEFT)
         # Where the next button starts
-        self.tmp_button_x = 1 if self.border else 0
-        self.tmp_button_y = 1 if self.border else 0
+        self.tmp_button_x = 0
+        self.tmp_button_y = 0
 
     ###################################################################################
     def layout(self):
         """Layout buttons"""
-        x_need = self.get_buttons_width()
-        y_need = self.get_buttons_height()
-        self.debug(f"{self} {x_need=} {y_need=}")
-        if self.ncols < 0:
-            self.ncols = x_need + 1
-        if self.nlines < 0:
-            self.nlines = y_need + 1
+        x_need = self.get_buttons_width() + (2 if self.border else 0)
+        y_need = self.get_buttons_height() + (2 if self.border else 0)
+        if self.ncols is None:
+            self.ncols = x_need
+        if self.nlines is None:
+            self.nlines = y_need
         self.debug(f"{self} {self.ncols=} {self.nlines=}")
         super().layout()
 
@@ -79,13 +78,13 @@ class ButtonBox(Container):
     @property
     def height(self) -> int:
         """Height of the button box"""
-        return self.get_buttons_height()
+        return self.get_buttons_height() + 1 + (2 if self.border else 0)
 
     ###################################################################################
     @property
     def width(self) -> int:
         """Width of the button box"""
-        return self.get_buttons_width()
+        return self.get_buttons_width() + 1 + (2 if self.border else 0)
 
     ###################################################################################
     def add(self, name: str, widget: Button):
