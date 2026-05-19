@@ -2,10 +2,10 @@
 
 import curses
 from collections import namedtuple
-from typing import Optional
+from typing import Optional, Any
 
 from .keys import Keys
-from .widget import Widget
+from .widget import Widget, Dimension
 
 #######################################################################################
 ENTRY = namedtuple("entry", ["value", "label"])
@@ -18,8 +18,8 @@ class Listbox(Widget):
     """A curses listbox"""
 
     ###################################################################################
-    def __init__(self, parent: curses.window, begin_y: int, begin_x: int):
-        super().__init__(parent=parent, begin_y=begin_y, begin_x=begin_x)
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
         self.entries: list[ENTRY] = []
         self.selected: Optional[int] = 0
         self.bindings = self.BINDINGS
@@ -48,7 +48,18 @@ class Listbox(Widget):
     def add_entry(self, val: str, entry: str):
         """Add an entry to the listbox"""
         self.entries.append(ENTRY(val, entry))
-        self._window.resize(len(self.entries), self.max_width())
+
+    ###################################################################################
+    def calculate_height(self, requested: Dimension, border_win: bool = False) -> int:
+        """Height of listbox"""
+        return len(self.entries) + (2 if self.border else 0)
+
+    ###################################################################################
+    def calculate_width(self, requested: Dimension, border_win: bool = False) -> int:
+        """Width of listbox"""
+        return (
+            self.max_width() + 1 + (2 if self.border else 0)
+        )  # +1 for curses weirdness
 
     ###################################################################################
     def max_width(self) -> int:

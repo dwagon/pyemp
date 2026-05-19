@@ -95,6 +95,9 @@ class Widget:
         win_size = self.calc_window_size(dimension, border_win=False)
 
         if self._border_window:
+            self.debug(
+                f"{self.name} border = derwin({win_size.nlines}, {win_size.ncols}, 1, 1)"
+            )
             self._window = self._border_window.derwin(
                 win_size.nlines, win_size.ncols, 1, 1
             )
@@ -122,6 +125,7 @@ class Widget:
         nlines = self.calculate_height(dimension, border_win)
         ncols = self.calculate_width(dimension, border_win)
         ans = Dimension(nlines, ncols, begin_y, begin_x)
+        self.debug(f"{self.name} calc_w_s({dimension}, {border_win}) {ans=}")
         return ans
 
     ###################################################################################
