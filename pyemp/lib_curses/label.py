@@ -14,17 +14,23 @@ class Label(Widget):
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         self.text = kwargs.get("text", "XXXXXXXX")
+        self.focusable = False
 
     ###################################################################################
     def draw(self):
         """Draw the label"""
         super().draw()
-        self.window.addstr(self.text)
+        self._window.addstr(self.begin_y, self.begin_x, self.text)
 
     ###################################################################################
     def set_text(self, text: str):
         """Set the text"""
         self.text = text
+
+    ###################################################################################
+    def assig_name(self) -> str:
+        """Assign a name if one isn't given"""
+        return f"Label {self.text[:8]}"
 
     ###################################################################################
     @property

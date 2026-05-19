@@ -1,5 +1,6 @@
 """Keys - has to be a class rather than a variable for the match/case to work"""
 
+from enum import Enum
 import curses.ascii
 
 #######################################################################################
@@ -7,7 +8,7 @@ import curses.ascii
 #######################################################################################
 
 
-class Keys:
+class Keys(Enum):
     """Keys definitions"""
 
     KEY_A = ord("a")
@@ -20,10 +21,13 @@ class Keys:
     KEY_G = ord("g")
     KEY_J = ord("j")
     KEY_K = ord("k")
+    KEY_LEFT = curses.KEY_LEFT
     KEY_N = ord("n")
     KEY_Q = ord("q")
     KEY_RETURN = ord("\n")
+    KEY_RIGHT = curses.KEY_RIGHT
     KEY_S = ord("s")
+    KEY_TAB = ord("\t")
     KEY_U = ord("u")
     KEY_UP = curses.KEY_UP
     KEY_W = ord("w")

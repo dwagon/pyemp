@@ -5,6 +5,8 @@ from enum import Enum, auto
 
 from .container import Container
 from .button import Button
+from .keys import Keys
+from .widget import Widget
 
 
 #######################################################################################
@@ -39,6 +41,29 @@ class ButtonBox(Container):
         # Where the next button starts
         self.tmp_button_x = 0
         self.tmp_button_y = 0
+        self.selected = 0  # Which button, if any, is selected
+        self.bindings = {
+            Keys.KEY_UP: self.prev,
+            Keys.KEY_LEFT: self.prev,
+            Keys.KEY_DOWN: self.next,
+            Keys.KEY_TAB: self.next,
+            Keys.KEY_RIGHT: self.next,
+        }
+        self.bindings.update(kwargs.get("bindings", {}))
+
+    ###################################################################################
+    def next(self):
+        """User has selected next button"""
+        self._widgets[self.selected].selected = False
+        self.selected = (self.selected + 1) % len(self._widgets)
+        self._widgets[self.selected].selected = True
+
+    ###################################################################################
+    def prev(self):
+        """User has selected previous button"""
+        self._widgets[self.selected].selected = False
+        self.selected = (self.selected + (len(self._widgets) - 1)) % len(self._widgets)
+        self._widgets[self.selected].selected = True
 
     ###################################################################################
     def layout(self):
@@ -49,14 +74,16 @@ class ButtonBox(Container):
             self.ncols = x_need
         if self.nlines is None:
             self.nlines = y_need
-        self.debug(f"{self} {self.ncols=} {self.nlines=}")
+        for num, button in enumerate(self._widgets):
+            if button.selected:
+                self.selected = num
         super().layout()
 
     ###################################################################################
     def get_buttons_width(self) -> int:
         """Return the width of all the buttons"""
         width = 0
-        for button in self._widgets.values():
+        for button in self._widgets:
             if self.direction == ButtonDirection.HORIZONTAL:
                 width += button.width
             else:
@@ -67,7 +94,7 @@ class ButtonBox(Container):
     def get_buttons_height(self) -> int:
         """Return the height of all the buttons"""
         height = 0
-        for button in self._widgets.values():
+        for button in self._widgets:
             if self.direction == ButtonDirection.VERTICAL:
                 height += button.height
             else:
@@ -87,16 +114,17 @@ class ButtonBox(Container):
         return self.get_buttons_width() + 1 + (2 if self.border else 0)
 
     ###################################################################################
-    def add(self, name: str, widget: Button):
+    def add(self, widget: Button, name: str = "") -> Widget:
         """Add a button to the box"""
         widget.begin_x = self.tmp_button_x
         widget.begin_y = self.tmp_button_y
 
-        super().add(name, widget)
+        super().add(widget, name)
         if self.direction == ButtonDirection.HORIZONTAL:
             self.tmp_button_x += widget.width
         else:
             self.tmp_button_y += widget.height
+        return self
 
 
 # EOF

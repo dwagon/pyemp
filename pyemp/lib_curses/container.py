@@ -3,6 +3,7 @@
 from typing import Any
 
 from .widget import Widget
+from .keys import Keys
 
 
 #######################################################################################
@@ -17,43 +18,38 @@ class Container(Widget):
     ):
         super().__init__(**kwargs)
 
-        self._widgets: dict[str, Widget] = {}
+        self._widgets: list[Widget] = []
 
     ###################################################################################
     def layout(self):
         """Setup - outer canvas for borders,etc, inner canvas for widgets"""
         super().layout()
-        for widget in self._widgets.values():
-            widget.parent = self.window
+        for widget in self._widgets:
+            widget.set_parent(self._window)
             widget.layout()
 
     ###################################################################################
-    def add(self, name: str, widget: Widget) -> Widget:
+    def add(self, widget: Widget, name: str = "") -> Widget:
         """Add a widget to the container"""
-        self._widgets[name] = widget
-        self._widgets[name].name = name
+        if not name:
+            name = widget.assign_name()
+        self.debug(f"{self.name} add({name=}, {widget})")
+        self._widgets.append(widget)
+        widget.name = name
         return widget
 
     ###################################################################################
     def delete(self, name: str):
         """Remove a widget from the container"""
-        del self._widgets[name]
-
-    # ###################################################################################
-    # def derwin(self, *args, **kwargs):
-    #     """Pass a derwin() call to the parent window"""
-    #     return self.window.derwin(*args, **kwargs)
-    #
-    # ###################################################################################
-    # def getmaxyx(self) -> tuple[int, int]:
-    #     """Return max y, max x of container"""
-    #     return self.nlines, self.ncols
+        for widget in self._widgets:
+            if widget.name == name:
+                self._widgets.remove(widget)
 
     ###################################################################################
     @property
     def height(self) -> int:
         """height of container"""
-        h = max(_.height for _ in self._widgets.values())
+        h = max(_.height for _ in self._widgets)
         self.debug(f"{self} height={h}")
         return h
 
@@ -61,7 +57,7 @@ class Container(Widget):
     @property
     def width(self) -> int:
         """width of container"""
-        w = max(_.width for _ in self._widgets.values())
+        w = max(_.width for _ in self._widgets)
         self.debug(f"{self} width={w}")
         return w
 
@@ -69,8 +65,21 @@ class Container(Widget):
     def draw(self):
         """Draw the window"""
         super().draw()
-        for widget in self._widgets.values():
+        self.debug(f"{self.name} draw() {self._widgets=}")
+        for widget in self._widgets:
             widget.draw()
+
+    ###################################################################################
+    def handle_input(self, key: Keys) -> None:
+        """Handle character input"""
+        self.debug(f"{self.name} {self.bindings}")
+        for widget in self._widgets:
+            widget.handle_input(key)
+
+        if key in self.bindings:
+            self.debug(f"{self.name} handle_input({key=})")
+            return self.bindings[key]()
+        return None
 
 
 # EOF

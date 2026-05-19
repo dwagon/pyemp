@@ -3,6 +3,7 @@
 import curses
 from typing import Optional
 from .widget import Widget
+from .keys import Keys
 
 
 #######################################################################################
@@ -19,7 +20,7 @@ class UI:
         curses.mousemask(curses.ALL_MOUSE_EVENTS)
         curses.curs_set(0)  # Invisible cursor
         self.stdscr.keypad(True)
-        self._widgets: dict[str, Widget] = {}
+        self._widgets: list[Widget] = []
         self.root = None
 
     ###################################################################################
@@ -28,15 +29,17 @@ class UI:
         lines = curses.LINES  # pylint: disable=no-member
         cols = curses.COLS  # pylint: disable=no-member
         self.root = self.stdscr.derwin(lines, cols, 0, 0)
-        for widget in self._widgets.values():
+        for widget in self._widgets:
             widget.layout()
 
     ###################################################################################
-    def add(self, name: str, widget: Widget) -> Widget:
+    def add(self, widget: Widget, name: str = "") -> Widget:
         """Add a widget to the screen"""
-        self._widgets[name] = widget
+        if not name:
+            name = widget.assign_name()
         widget.name = name
-        widget.parent = self.stdscr
+        self._widgets.append(widget)
+        widget.set_parent(self.stdscr)
         return widget
 
     ###################################################################################
@@ -45,7 +48,7 @@ class UI:
         self.layout()
         while True:
             self.stdscr.clear()
-            for widget in self._widgets.values():
+            for widget in self._widgets:
                 widget.draw()
             curses.doupdate()
 
@@ -60,13 +63,14 @@ class UI:
     ###################################################################################
     def handle_keyboard_event(self, key: int):
         """Handle a keyboard event"""
-        for widget in self._widgets.values():
-            widget.handle_input(key)
+        self.debug(f"handle_keyboard_event({key=})")
+        for widget in self._widgets:
+            widget.handle_input(Keys(key))
 
     ###################################################################################
     def handle_mouse_event(self):
         """Handle a mouse event"""
-        for widget in self._widgets.values():
+        for widget in self._widgets:
             widget.handle_mouse()
 
     ###################################################################################

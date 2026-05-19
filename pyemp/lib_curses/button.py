@@ -1,5 +1,6 @@
 """Curses based button"""
 
+import curses
 from typing import Optional, Callable, Any
 from .widget import Widget
 from .mouse_events import MouseEvent
@@ -20,18 +21,23 @@ class Button(Widget):
         self.mouse_bindings = {MouseEvent.BUTTON1_CLICKED: self.clicked}
         self.ncols = self.width
         self.nlines = self.height
+        self.selected = kwargs.get("selected", False)
 
     ###################################################################################
     def draw(self):
         """Draw the button"""
         super().draw()
-        self.window.addstr(0, 0, self.label)
+        if self.selected:
+            self._window.attron(curses.A_REVERSE)
+        else:
+            self._window.attroff(curses.A_REVERSE)
+        self._window.addstr(0, 0, self.label)
 
     ###################################################################################
     def clicked(self, x: int, y: int):
         """Button was selected"""
-        y1, x1 = self.window.getbegyx()
-        y2, x2 = self.window.getmaxyx()
+        y1, x1 = self._window.getbegyx()
+        y2, x2 = self._window.getmaxyx()
         if x1 < x < x2 and y1 < y < y2:
             if self.callback:
                 self.callback()
@@ -56,6 +62,11 @@ class Button(Widget):
     def height(self) -> int:
         """Height of the button"""
         return 1 + (2 if self.border else 0)
+
+    ###################################################################################
+    def assig_name(self) -> str:
+        """Assign a name if one isn't given"""
+        return f"Button {self.label}"
 
     ###################################################################################
     def __repr__(self):

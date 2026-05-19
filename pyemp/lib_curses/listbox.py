@@ -48,7 +48,7 @@ class Listbox(Widget):
     def add_entry(self, val: str, entry: str):
         """Add an entry to the listbox"""
         self.entries.append(ENTRY(val, entry))
-        self.window.resize(len(self.entries), self.max_width())
+        self._window.resize(len(self.entries), self.max_width())
 
     ###################################################################################
     def max_width(self) -> int:
@@ -63,7 +63,7 @@ class Listbox(Widget):
                 attr = curses.A_REVERSE
             else:
                 attr = curses.A_NORMAL
-            self.window.addstr(y, 0, line.label, attr)
+            self._window.addstr(y, 0, line.label, attr)
 
     ###################################################################################
     def get(self) -> Optional[str]:

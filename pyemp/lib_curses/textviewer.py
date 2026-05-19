@@ -22,7 +22,7 @@ class TextViewer(Widget):
     def draw(self) -> None:
         """Draw the text"""
         for y, line in enumerate(self.text, self.begin_y):
-            self.parent.addstr(y, self.begin_x, line)
+            self._parent.addstr(y, self.begin_x, line)
 
 
 # EOF
