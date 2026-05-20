@@ -2,7 +2,7 @@
 
 import curses
 from typing import Optional, Callable, Any
-from .widget import Widget
+from .widget import Widget, FitType
 from .mouse_events import MouseEvent
 
 
@@ -19,8 +19,7 @@ class Button(Widget):
         self.callback: Optional[Callable[[], None]] = kwargs.get("callback", None)
         self.border: bool = kwargs.get("border", True)
         self.mouse_bindings = {MouseEvent.BUTTON1_CLICKED: self.clicked}
-        self.ncols = self.width
-        self.nlines = self.height
+        self.fit = FitType.MIN_FIT
         self.selected = kwargs.get("selected", False)
 
     ###################################################################################
@@ -53,15 +52,15 @@ class Button(Widget):
 
     ###################################################################################
     @property
-    def width(self) -> int:
+    def required_width(self) -> int:
         """Width of the button (extra one because curses seems to not handle one char wide"""
-        return len(self.label) + (2 if self.border else 0) + 1
+        return len(self.label) + 1
 
     ###################################################################################
     @property
-    def height(self) -> int:
+    def required_height(self) -> int:
         """Height of the button"""
-        return 1 + (2 if self.border else 0)
+        return 1
 
     ###################################################################################
     def assig_name(self) -> str:

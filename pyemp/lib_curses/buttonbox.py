@@ -6,7 +6,7 @@ from enum import Enum, auto
 from .container import Container
 from .button import Button
 from .keys import Keys
-from .widget import Widget
+from .widget import Widget, FitType
 
 
 #######################################################################################
@@ -42,6 +42,7 @@ class ButtonBox(Container):
         self.tmp_button_x = 0
         self.tmp_button_y = 0
         self.selected = 0  # Which button, if any, is selected
+        self.fit = FitType.MIN_FIT
         self.bindings = {
             Keys.KEY_UP: self.prev,
             Keys.KEY_LEFT: self.prev,
@@ -68,12 +69,12 @@ class ButtonBox(Container):
     ###################################################################################
     def layout(self):
         """Layout buttons"""
-        x_need = self.get_buttons_width() + (2 if self.border else 0)
-        y_need = self.get_buttons_height() + (2 if self.border else 0)
-        if self.ncols is None:
-            self.ncols = x_need
-        if self.nlines is None:
-            self.nlines = y_need
+        x_need = self.get_buttons_width()
+        y_need = self.get_buttons_height()
+        if self.width is None:
+            self.width = x_need
+        if self.height is None:
+            self.height = y_need
         for num, button in enumerate(self._widgets):
             if button.selected:
                 self.selected = num
@@ -81,49 +82,56 @@ class ButtonBox(Container):
 
     ###################################################################################
     def get_buttons_width(self) -> int:
-        """Return the width of all the buttons"""
+        """Return the required_width of all the buttons"""
         width = 0
         for button in self._widgets:
             if self.direction == ButtonDirection.HORIZONTAL:
-                width += button.width
+                width += button.required_width + (2 if button.border else 0)
+                self.debug(f"{width=}")
             else:
-                width = max(width, button.width)
+                width = max(width, button.required_width + (2 if button.border else 0))
         return width
 
     ###################################################################################
     def get_buttons_height(self) -> int:
-        """Return the height of all the buttons"""
+        """Return the required_height of all the buttons"""
         height = 0
         for button in self._widgets:
             if self.direction == ButtonDirection.VERTICAL:
-                height += button.height
+                height += button.required_height + (2 if button.border else 0)
             else:
-                height = max(height, button.height)
+                height = max(
+                    height, button.required_height + (2 if button.border else 0)
+                )
         return height
 
     ###################################################################################
     @property
-    def height(self) -> int:
+    def required_height(self) -> int:
         """Height of the button box"""
-        return self.get_buttons_height() + 1 + (2 if self.border else 0)
+        return self.get_buttons_height()
 
     ###################################################################################
     @property
-    def width(self) -> int:
+    def required_width(self) -> int:
         """Width of the button box"""
-        return self.get_buttons_width() + 1 + (2 if self.border else 0)
+        return self.get_buttons_width()
 
     ###################################################################################
     def add(self, widget: Button, name: str = "") -> Widget:
         """Add a button to the box"""
+        assert isinstance(
+            widget, Button
+        ), "Widgets added to a ButtonBox must be Buttons"
+
         widget.begin_x = self.tmp_button_x
         widget.begin_y = self.tmp_button_y
 
         super().add(widget, name)
         if self.direction == ButtonDirection.HORIZONTAL:
-            self.tmp_button_x += widget.width
+            self.tmp_button_x += widget.required_width + (2 if widget.border else 0)
         else:
-            self.tmp_button_y += widget.height
+            self.tmp_button_y += widget.required_height + (2 if widget.border else 0)
         return self
 
 

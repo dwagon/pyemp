@@ -33,7 +33,6 @@ class Container(Widget):
         """Add a widget to the container"""
         if not name:
             name = widget.assign_name()
-        self.debug(f"{self.name} add({name=}, {widget})")
         self._widgets.append(widget)
         widget.name = name
         return widget
@@ -47,25 +46,31 @@ class Container(Widget):
 
     ###################################################################################
     @property
-    def height(self) -> int:
-        """height of container"""
-        h = max(_.height for _ in self._widgets)
-        self.debug(f"{self} height={h}")
+    def required_height(self) -> int:
+        """required_height of container"""
+        if self._widgets:
+            h = max(_.required_height for _ in self._widgets)
+        else:
+            h = 1  # Min size
+        self.debug(f"required_height={h}")
         return h
 
     ###################################################################################
     @property
-    def width(self) -> int:
-        """width of container"""
-        w = max(_.width for _ in self._widgets)
-        self.debug(f"{self} width={w}")
+    def required_width(self) -> int:
+        """required_width of container"""
+        if self._widgets:
+            w = max(_.required_width for _ in self._widgets)
+        else:
+            w = 1  # Min size
+        self.debug(f"required_width={w}")
+
         return w
 
     ###################################################################################
     def draw(self):
         """Draw the window"""
         super().draw()
-        self.debug(f"{self.name} draw() {self._widgets=}")
         for widget in self._widgets:
             widget.draw()
 
