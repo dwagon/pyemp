@@ -22,7 +22,19 @@ class Listbox(Widget):
         super().__init__(**kwargs)
         self.entries: list[ENTRY] = []
         self._selected: Optional[int] = 0
-        self.bindings = self.BINDINGS
+        self.bindings = {
+            Keys.KEY_W: self.option_prev,
+            Keys.KEY_J: self.option_prev,
+            Keys.KEY_UP: self.option_prev,
+            Keys.KEY_S: self.option_next,
+            Keys.KEY_K: self.option_next,
+            Keys.KEY_DOWN: self.option_next,
+            Keys.KEY_RETURN: self.option_select,
+            Keys.KEY_ENTER: self.option_select,
+            Keys.KEY_ESC: self.option_escape,
+        }
+        self.bindings.update(kwargs.get("bidings", {}))
+
         self.fit = FitType.MIN_FIT
 
     ###################################################################################
@@ -71,6 +83,7 @@ class Listbox(Widget):
     ###################################################################################
     def draw(self):
         """Draw the widget"""
+        super().draw()
         for y, line in enumerate(self.entries):
             if y == self._selected:
                 attr = curses.A_REVERSE
@@ -84,19 +97,6 @@ class Listbox(Widget):
         if self._selected:
             return self.entries[self._selected].value
         return None
-
-    ###################################################################################
-    BINDINGS = {
-        Keys.KEY_W: option_prev,
-        Keys.KEY_J: option_prev,
-        Keys.KEY_UP: option_prev,
-        Keys.KEY_S: option_next,
-        Keys.KEY_K: option_next,
-        Keys.KEY_DOWN: option_next,
-        Keys.KEY_RETURN: option_select,
-        Keys.KEY_ENTER: option_select,
-        Keys.KEY_ESC: option_escape,
-    }
 
 
 # EOF

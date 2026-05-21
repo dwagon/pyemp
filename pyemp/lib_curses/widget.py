@@ -94,7 +94,6 @@ class Widget:
         Happens after object creation and before drawing for the first time"""
         if self.border:
             self.layout_border_window()
-            self.debug("")
         self.layout_window()
 
     ###################################################################################

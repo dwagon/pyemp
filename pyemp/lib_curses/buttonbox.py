@@ -44,9 +44,8 @@ class ButtonBox(Container):
         self.selected = 0  # Which button, if any, is selected
         self.fit = FitType.MIN_FIT
         self.bindings = {
-            Keys.KEY_UP: self.prev,
             Keys.KEY_LEFT: self.prev,
-            Keys.KEY_DOWN: self.next,
+            Keys.KEY_BTAB: self.prev,
             Keys.KEY_TAB: self.next,
             Keys.KEY_RIGHT: self.next,
         }
@@ -122,7 +121,7 @@ class ButtonBox(Container):
         """Add a button to the box"""
         assert isinstance(
             widget, Button
-        ), "Widgets added to a ButtonBox must be Buttons"
+        ), f"Widgets added to a ButtonBox must be Buttons not {type(widget)}"
 
         widget.begin_x = self.tmp_button_x
         widget.begin_y = self.tmp_button_y

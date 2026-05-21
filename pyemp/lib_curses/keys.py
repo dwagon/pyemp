@@ -13,6 +13,7 @@ class Keys(Enum):
 
     KEY_A = ord("a")
     KEY_B = ord("b")
+    KEY_BTAB = curses.KEY_BTAB
     KEY_C = ord("c")
     KEY_D = ord("d")
     KEY_DOWN = curses.KEY_DOWN
