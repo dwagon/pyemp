@@ -11,6 +11,7 @@ import curses.ascii
 class Keys(Enum):
     """Keys definitions"""
 
+    KEY_NONE = 0
     KEY_A = ord("a")
     KEY_B = ord("b")
     KEY_BTAB = curses.KEY_BTAB

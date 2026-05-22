@@ -22,6 +22,7 @@ class UI:
         self.stdscr.keypad(True)
         self._widgets: list[Widget] = []
         self.root = None
+        self._focus: Optional[Widget] = None
 
     ###################################################################################
     def layout(self):
@@ -31,6 +32,50 @@ class UI:
         self.root = self.stdscr.derwin(lines, cols, 0, 0)
         for widget in self._widgets:
             widget.layout()
+        if not self._focus:
+            self._focus = self._widgets[0]  # TODO: Make selectable
+
+    ###################################################################################
+    def focus_widget(self, focus_on_widget: Widget) -> None:
+        """Set focus on specific widget"""
+        for widget in self._widgets:
+            if widget._focus:
+                widget.loseFocus()
+            widget._focus = False
+        focus_on_widget._focus = True
+        focus_on_widget.gainFocus()
+
+    ###################################################################################
+    def focus_next(self) -> None:
+        """Move focus to next widget"""
+        index = self._widgets.index(self._focus)
+        looped = False
+        while True:
+            index += 1
+            if index >= len(self._widgets):
+                if looped:  # No suitable widgets
+                    return
+                looped = True
+                index = 0
+            if self._widgets[index].focusable:
+                self.focus_widget(self._widgets[index])
+                return
+
+    ###################################################################################
+    def focus_prev(self) -> None:
+        """Move focus to prev widget"""
+        index = self._widgets.index(self._focus)
+        looped = False
+        while True:
+            index -= 1
+            if index < 0:
+                if looped:  # No suitable widgets
+                    return
+                looped = True
+                index = len(self._widgets)
+            if self._widgets[index].focusable:
+                self.focus_widget(self._widgets[index])
+                return
 
     ###################################################################################
     def add(self, widget: Widget, name: str = "") -> Widget:
@@ -56,16 +101,32 @@ class UI:
             ch = self.stdscr.getch()
             if ch == curses.KEY_MOUSE:
                 self.handle_mouse_event()
-            self.handle_keyboard_event(ch)
+            if self.handle_keyboard_event(ch):
+                continue
+            self.hand_focus_change_input(ch)
             if self.has_finished():
                 return
 
     ###################################################################################
-    def handle_keyboard_event(self, key: int):
+    def hand_focus_change_input(self, ch: int):
+        """Handle input that changes focus"""
+        try:
+            key_ch = Keys(ch)
+        except ValueError:
+            key_ch = Keys.KEY_NONE
+        if key_ch == Keys.KEY_TAB:
+            self.focus_next()
+        elif key_ch == Keys.KEY_BTAB:
+            self.focus_prev()
+
+    ###################################################################################
+    def handle_keyboard_event(self, key: int) -> bool:
         """Handle a keyboard event"""
         self.debug(f"handle_keyboard_event({key=})")
-        for widget in self._widgets:
-            widget.handle_input(Keys(key))
+        if self._focus:
+            return self._focus.handle_input(Keys(key))
+        self.debug("unhandled input")
+        return False
 
     ###################################################################################
     def handle_mouse_event(self):

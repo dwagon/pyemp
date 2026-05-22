@@ -45,8 +45,6 @@ class ButtonBox(Container):
         self.fit = FitType.MIN_FIT
         self.bindings = {
             Keys.KEY_LEFT: self.prev,
-            Keys.KEY_BTAB: self.prev,
-            Keys.KEY_TAB: self.next,
             Keys.KEY_RIGHT: self.next,
         }
         self.bindings.update(kwargs.get("bindings", {}))

@@ -22,7 +22,7 @@ class FitType(Enum):
 class BindingName(StrEnum):
     """Event Binding names"""
 
-    ON_FOCUS = auto()
+    GAIN_FOCUS = auto()
     LOSE_FOCUS = auto()
 
 
@@ -39,12 +39,12 @@ class Widget:
         self.width: Optional[int] = kwargs.get("width", None)
         self.border = kwargs.get("border", False)
         self.name = kwargs.get("name", "")
-        self.focus = kwargs.get("focus", False)
+        self.focus = False
         self.focusable = kwargs.get("focusable", True)
         self.bindings: dict[Keys, Callable[[], None]] = kwargs.get("bindings", {})
         self.mouse_bindings: dict[MouseEvent, Callable[[int, int], None]] = {}
         self.misc_bindings: dict[BindingName, Optional[Callable[[], None]]] = {
-            BindingName.ON_FOCUS: kwargs.get("onfocus"),
+            BindingName.GAIN_FOCUS: kwargs.get("gainfocus"),
             BindingName.LOSE_FOCUS: kwargs.get("loosefocus"),
         }
         self.fit = kwargs.get("fit", FitType.MAX_FIT)
@@ -59,10 +59,10 @@ class Widget:
             outfh.write(f"{repr(self)}: {msg}\n")
 
     ###################################################################################
-    def onFocus(self):
+    def gainFocus(self):
         """This widget has received focus"""
-        if self.misc_bindings[BindingName.ON_FOCUS]:
-            self.misc_bindings[BindingName.ON_FOCUS]()
+        if self.misc_bindings[BindingName.GAIN_FOCUS]:
+            self.misc_bindings[BindingName.GAIN_FOCUS]()
 
     ###################################################################################
     def loseFocus(self):
@@ -73,8 +73,15 @@ class Widget:
     ###################################################################################
     def draw(self) -> None:
         """Draw the Widget"""
+        if self.focus:
+            self._window.attron(curses.A_BOLD)
+        else:
+            self._window.attroff(curses.A_BOLD)
         if self._border_window:
-            self._border_window.border()
+            if self.focus:
+                self._border_window.border(0, 0, 0, 0, "*")
+            else:
+                self._border_window.border()
 
     ###################################################################################
     @property
@@ -201,13 +208,14 @@ class Widget:
         return max_height
 
     ###################################################################################
-    def handle_input(self, key: Keys) -> None:
-        """Handle character input"""
+    def handle_input(self, key: Keys) -> bool:
+        """Handle character input - return if event handled"""
         self.debug(f"\t{self.bindings=}")
         if key in self.bindings:
             self.debug(f"\thandle_input({key=})")
-            return self.bindings[key]()
-        return None
+            self.bindings[key]()
+            return True
+        return False
 
     ###################################################################################
     def assign_name(self) -> str:
