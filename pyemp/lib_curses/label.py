@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from .widget import Widget
+from .widget import Widget, FitType
 
 
 #######################################################################################
@@ -14,12 +14,14 @@ class Label(Widget):
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         self.text = kwargs.get("text", "XXXXXXXX")
+        self.focusable = False
+        self.fit = FitType.MIN_FIT
 
     ###################################################################################
     def draw(self):
         """Draw the label"""
         super().draw()
-        self.window.addstr(self.text)
+        self._window.addstr(self.begin_y, self.begin_x, self.text)
 
     ###################################################################################
     def set_text(self, text: str):
@@ -27,15 +29,20 @@ class Label(Widget):
         self.text = text
 
     ###################################################################################
+    def assign_name(self) -> str:
+        """Assign a name if one isn't given"""
+        return f"Label {self.text[:8]}"
+
+    ###################################################################################
     @property
-    def height(self) -> int:
-        """height of widget"""
+    def required_height(self) -> int:
+        """required_height of widget"""
         return 1
 
     ###################################################################################
     @property
-    def width(self) -> int:
-        """width of widget"""
+    def required_width(self) -> int:
+        """required_width of widget"""
         return len(self.text) + 1
 
 
