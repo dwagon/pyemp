@@ -1,10 +1,10 @@
 """Container of other widgets"""
 
-from typing import Any, Optional
 import curses
+from typing import Any, Optional
 
-from .widget import Widget
 from .keys import Keys
+from .widget import Widget
 
 
 #######################################################################################
@@ -18,32 +18,20 @@ class Container(Widget):
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
-        self.focus: bool = False
         self.bindings = {
             Keys.KEY_TAB: self.focus_next,
             Keys.KEY_BTAB: self.focus_prev,
         }
         self.bindings.update(kwargs.get("bindings", {}))
-
         self._widgets: list[Widget] = []
 
     ###################################################################################
     def layout(self):
         """Setup - outer canvas for borders,etc, inner canvas for widgets"""
         super().layout()
-        self.initial_focus()
         for widget in self._widgets:
             widget.set_parent(self._window)
             widget.layout()
-
-    ###################################################################################
-    def initial_focus(self):
-        """Set initial focus"""
-        # Focus on the first focusable widget - make this selectable in future
-        for widget in self._widgets:
-            if widget.focusable:
-                self.focus = True
-                break
 
     ###################################################################################
     def add(self, widget: Widget, name: str = "") -> Widget:
@@ -52,6 +40,7 @@ class Container(Widget):
             name = widget.assign_name()
         self._widgets.append(widget)
         widget.name = name
+        widget.parent_widget = self
         return widget
 
     ###################################################################################
@@ -87,7 +76,7 @@ class Container(Widget):
     ###################################################################################
     def draw(self):
         """Draw the window"""
-        # super().draw()
+        super().draw()
         for widget in self._widgets:
             if self.focus:
                 self._window.attron(curses.A_BOLD)
@@ -104,6 +93,7 @@ class Container(Widget):
             self.bindings[key]()
             return True
         if widget := self.which_widget_has_focus():
+            self.debug(f"Giving input to {widget=}")
             return widget.handle_input(key)
         return False
 
@@ -128,7 +118,10 @@ class Container(Widget):
     ###################################################################################
     def focus_next(self) -> None:
         """Move focus to next widget"""
-        index = self._widgets.index(self.which_widget_has_focus())
+        widget = self.which_widget_has_focus()
+        if not widget:
+            return
+        index = self._widgets.index(widget)
         looped = False
         while True:
             index += 1
@@ -144,7 +137,10 @@ class Container(Widget):
     ###################################################################################
     def focus_prev(self) -> None:
         """Move focus to prev widget"""
-        index = self._widgets.index(self.which_widget_has_focus())
+        widget = self.which_widget_has_focus()
+        if not widget:
+            return
+        index = self._widgets.index(widget)
         looped = False
         while True:
             index -= 1

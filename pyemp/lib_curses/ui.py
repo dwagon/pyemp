@@ -1,9 +1,12 @@
 """Curses UI"""
 
 import curses
+import sys
 from typing import Optional
-from .widget import Widget
+
 from .keys import Keys
+from .widget import Widget
+from .window import Window
 
 
 #######################################################################################
@@ -32,17 +35,24 @@ class UI:
         self.root = self.stdscr.derwin(lines, cols, 0, 0)
         for widget in self._widgets:
             widget.layout()
-        if not self._focus:
-            self._focus = self._widgets[0]  # TODO: Make selectable
+
+    ###################################################################################
+    def focus_on(self, widget: Widget):
+        """Set initial focus"""
+        self.debug(f"{self._widgets=} {widget=}")
+        while widget not in self._widgets:
+            widget = widget.parent_widget
+        self._focus = self._widgets.index(widget)
+        widget.focus = True
 
     ###################################################################################
     def focus_widget(self, focus_on_widget: Widget) -> None:
         """Set focus on specific widget"""
         for widget in self._widgets:
-            if widget._focus:
+            if widget.focus:
                 widget.loseFocus()
-            widget._focus = False
-        focus_on_widget._focus = True
+            widget.focus = False
+        focus_on_widget.focus = True
         focus_on_widget.gainFocus()
 
     ###################################################################################
@@ -80,6 +90,11 @@ class UI:
     ###################################################################################
     def add(self, widget: Widget, name: str = "") -> Widget:
         """Add a widget to the screen"""
+        if not isinstance(widget, Window):
+            print(
+                f"Can only add Window() to UI, not {widget}", file=open("/tmp/err", "a")
+            )
+            sys.exit(2)
         if not name:
             name = widget.assign_name()
         widget.name = name
@@ -103,29 +118,39 @@ class UI:
                 self.handle_mouse_event()
             if self.handle_keyboard_event(ch):
                 continue
-            self.hand_focus_change_input(ch)
+            if self.handle_focus_change_input(ch):
+                continue
             if self.has_finished():
                 return
 
     ###################################################################################
-    def hand_focus_change_input(self, ch: int):
+    def handle_focus_change_input(self, ch: int) -> bool:
         """Handle input that changes focus"""
         try:
             key_ch = Keys(ch)
         except ValueError:
+            self.debug(f"handle_focus_change_input({ch=})")
             key_ch = Keys.KEY_NONE
         if key_ch == Keys.KEY_TAB:
             self.focus_next()
+            return True
         elif key_ch == Keys.KEY_BTAB:
             self.focus_prev()
+            return True
+        return False
 
     ###################################################################################
     def handle_keyboard_event(self, key: int) -> bool:
         """Handle a keyboard event"""
-        self.debug(f"handle_keyboard_event({key=})")
         if self._focus:
-            return self._focus.handle_input(Keys(key))
-        self.debug("unhandled input")
+            try:
+                keys_ch = Keys(key)
+            except ValueError:
+                self.debug(f"Non Key input {key}")
+            else:
+                return self._focus.handle_input(keys_ch)
+
+        self.debug(f"unhandled input {key=}")
         return False
 
     ###################################################################################

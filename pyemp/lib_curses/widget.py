@@ -1,11 +1,12 @@
 """Parent class for widgets"""
 
 import curses
-from enum import StrEnum, Enum, auto
 from collections import namedtuple
+from enum import StrEnum, Enum, auto
 from typing import Callable, Any, Self, Optional
-from .mouse_events import MouseEvent
+
 from .keys import Keys
+from .mouse_events import MouseEvent
 
 Dimension = namedtuple("Dimension", "height width begin_y begin_x ")
 
@@ -40,6 +41,7 @@ class Widget:
         self.border = kwargs.get("border", False)
         self.name = kwargs.get("name", "")
         self.focus = False
+        self.parent_widget = None
         self.focusable = kwargs.get("focusable", True)
         self.bindings: dict[Keys, Callable[[], None]] = kwargs.get("bindings", {})
         self.mouse_bindings: dict[MouseEvent, Callable[[int, int], None]] = {}
@@ -48,7 +50,7 @@ class Widget:
             BindingName.LOSE_FOCUS: kwargs.get("loosefocus"),
         }
         self.fit = kwargs.get("fit", FitType.MAX_FIT)
-        self._parent = None
+        self._parent_window = None
         self._window = None
         self._border_window = None
 
@@ -61,12 +63,14 @@ class Widget:
     ###################################################################################
     def gainFocus(self):
         """This widget has received focus"""
+        self.debug("Gained focus")
         if self.misc_bindings[BindingName.GAIN_FOCUS]:
             self.misc_bindings[BindingName.GAIN_FOCUS]()
 
     ###################################################################################
     def loseFocus(self):
         """This widget has lost focus"""
+        self.debug("Lost Focus")
         if self.misc_bindings[BindingName.LOSE_FOCUS]:
             self.misc_bindings[BindingName.LOSE_FOCUS]()
 
@@ -125,7 +129,7 @@ class Widget:
             self.debug(
                 f"derwinB({size.height}, {size.width}, {size.begin_y}, {size.begin_x})"
             )
-            self._window = self._parent.derwin(
+            self._window = self._parent_window.derwin(
                 size.height, size.width, size.begin_y, size.begin_x
             )
 
@@ -138,7 +142,7 @@ class Widget:
             f"border derwin({win_size.height}, {win_size.width}, "
             f"{win_size.begin_y}, {win_size.begin_x})"
         )
-        self._border_window = self._parent.derwin(
+        self._border_window = self._parent_window.derwin(
             win_size.height, win_size.width, win_size.begin_y, win_size.begin_x
         )
 
@@ -166,7 +170,7 @@ class Widget:
         if requested.height is None:
             height = max_h if self.fit == FitType.MAX_FIT else min_h
         else:
-            height = requested.height
+            height = requested.height - (2 if (not border_win and self.border) else 0)
         height = min_h if height < min_h else height
         height = max_h if height > max_h else height
         self.debug(f"calculate_height() {min_h=} {max_h=} {height=}")
@@ -183,12 +187,10 @@ class Widget:
                 min_w += 2
             else:
                 max_w -= 2
-
         if requested.width is None:
             width = max_w if self.fit == FitType.MAX_FIT else min_w
         else:
-            width = requested.width
-
+            width = requested.width - (2 if (not border_win and self.border) else 0)
         width = min_w if width < min_w else width
         width = max_w if width > max_w else width
         self.debug(f"calculate_width() {min_w=} {max_w=} {width=}")
@@ -198,13 +200,13 @@ class Widget:
     ###################################################################################
     def avail_width(self) -> int:
         """How much width do we have available"""
-        _, max_width = self._parent.getmaxyx()
+        _, max_width = self._parent_window.getmaxyx()
         return max_width
 
     ###################################################################################
     def avail_height(self) -> int:
         """How much height do we have available"""
-        max_height, _ = self._parent.getmaxyx()
+        max_height, _ = self._parent_window.getmaxyx()
         return max_height
 
     ###################################################################################
@@ -234,7 +236,7 @@ class Widget:
     ###################################################################################
     def set_parent(self, window: curses.window):
         """Set the parent"""
-        self._parent = window
+        self._parent_window = window
 
     ###################################################################################
     def handle_mouse(self) -> None:

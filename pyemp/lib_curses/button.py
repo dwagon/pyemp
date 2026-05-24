@@ -2,8 +2,9 @@
 
 import curses
 from typing import Optional, Callable, Any
-from .widget import Widget, FitType
+
 from .mouse_events import MouseEvent
+from .widget import Widget, FitType
 
 
 #######################################################################################

@@ -21,7 +21,7 @@ class Label(Widget):
     def draw(self):
         """Draw the label"""
         super().draw()
-        self._window.addstr(self.begin_y, self.begin_x, self.text)
+        self._window.addstr(0, 0, self.text)
 
     ###################################################################################
     def set_text(self, text: str):

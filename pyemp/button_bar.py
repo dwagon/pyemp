@@ -1,7 +1,6 @@
 """Button Bar"""
 
 from pyemp.lib_curses import ButtonBox, Button
-from pyemp.desig_window import Desig_Window
 
 
 #######################################################################################
@@ -11,13 +10,11 @@ class ButtonBar(ButtonBox):
     """Window for displaying buttons"""
 
     def __init__(self, game, **kwargs):
-        kwargs["border"] = False
         super().__init__(**kwargs)
+        self.border = False
         self.game = game
-        desig_button = Button(label="Desig", callback=self.desig_callback)
-        self.add_button(desig_button)
-        thresh_button = Button(label="Thresh", callback=self.thresh_callback)
-        self.add_button(thresh_button)
+        self.add(Button(label="Designate", callback=self.desig_callback))
+        self.add(Button(label="Threshold", callback=self.thresh_callback))
 
     ###################################################################################
     def desig_callback(self):

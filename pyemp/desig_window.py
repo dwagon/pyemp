@@ -44,14 +44,14 @@ class Desig_Window:
     ###################################################################################
     def init_widgets(self):
         """Add widgets"""
-        self.listbox = Listbox(self.container.window, 3, 1)
+        self.listbox = Listbox(self.container._window, 3, 1)
         for desig, descr in DESIG_KEY_MAP.items():
             if desig in ("?", ".", "^", "s", "-", "~", "\\"):  # Can't be designated as
                 continue
             self.listbox.add_entry(desig, f"{desig} {descr}")
         self.container.add_widget(
             Label(
-                self.container.window,
+                self.container._window,
                 1,
                 1,
                 f"Designate Sector ({self.x}, {self.y})",

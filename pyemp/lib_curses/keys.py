@@ -1,7 +1,7 @@
 """Keys - has to be a class rather than a variable for the match/case to work"""
 
-from enum import Enum
 import curses.ascii
+from enum import Enum
 
 #######################################################################################
 #######################################################################################
