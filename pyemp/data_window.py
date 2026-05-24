@@ -17,11 +17,15 @@ class DataWindow(Container):
         super().__init__(**kwargs)
         self.game = game
         self.border = True
-        self.hex_label = self.add("hex", Label(begin_y=1, begin_x=1, text="Hex -, -"))
-        self.desig_label = self.add("desig", Label(begin_y=2, begin_x=1, text=""))
-        self.pop_label = self.add("pop", Label(begin_y=3, begin_x=1, text=""))
-        self.resource_label = self.add("resource", Label(begin_y=4, begin_x=1, text=""))
-        self.details = self.add("details", TextViewer(begin_y=6, begin_x=1, text=""))
+        self.hex_label = self.add(
+            Label(begin_y=1, begin_x=1, text="Hex -, -"), "Hex Label"
+        )
+        self.desig_label = self.add(Label(begin_y=2, begin_x=1, text=""), "Desig Label")
+        self.pop_label = self.add(Label(begin_y=3, begin_x=1, text=""), "Pop Label")
+        self.resource_label = self.add(
+            Label(begin_y=4, begin_x=1, text=""), "Resource Label"
+        )
+        self.details = self.add(TextViewer(begin_y=6, begin_x=1, text=""), "Details")
 
     ###################################################################################
     def update(self, x: int, y: int, mapdata: MapData):

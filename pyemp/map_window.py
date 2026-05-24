@@ -2,13 +2,13 @@
 
 import curses
 
-from pyemp.lib_curses import Container, TextViewer, Keys
+from pyemp.lib_curses import TextViewer, Keys
 
 
 #######################################################################################
 #######################################################################################
 #######################################################################################
-class MapWindow(Container):
+class MapWindow(TextViewer):
     """Window for displaying map data"""
 
     def __init__(self, game, **kwargs):
@@ -18,7 +18,6 @@ class MapWindow(Container):
         self.world_x = kwargs.get("world_x")
         self.world_y = kwargs.get("world_y")
         self.map = kwargs.get("map")
-        self.add("display", TextViewer(begin_x=1, begin_y=1))
         self.x = 0
         self.y = 0
         self.bindings = {
@@ -79,7 +78,7 @@ class MapWindow(Container):
                     attr = curses.A_REVERSE
                 else:
                     attr = curses.A_NORMAL
-                self.parent.addstr(
+                self._window.addstr(
                     b + self.world_y // 2,
                     a + self.world_x // 2,
                     self.map[a, b].des,
