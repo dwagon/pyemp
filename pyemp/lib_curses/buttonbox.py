@@ -1,10 +1,10 @@
 """Container for a number of buttons"""
 
-from typing import Any
 from enum import Enum, auto
+from typing import Any
 
-from .container import Container
 from .button import Button
+from .container import Container
 from .keys import Keys
 from .widget import Widget, FitType
 
@@ -84,7 +84,6 @@ class ButtonBox(Container):
         for button in self._widgets:
             if self.direction == ButtonDirection.HORIZONTAL:
                 width += button.required_width + (2 if button.border else 0)
-                self.debug(f"{width=}")
             else:
                 width = max(width, button.required_width + (2 if button.border else 0))
         return width
