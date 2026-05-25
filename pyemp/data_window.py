@@ -20,6 +20,17 @@ class DataWindow(Container):
         self.hex_label = self.add(
             Label(begin_y=1, begin_x=1, text="Hex -, -"), "Hex Label"
         )
+        self.desig_label = None
+        self.pop_label = None
+        self.resource_label = None
+        self.details = None
+
+    ###################################################################################
+    def layout(self):
+        """Layout the text fields"""
+        self.hex_label = self.add(
+            Label(begin_y=1, begin_x=1, text="Hex -, -"), "Hex Label"
+        )
         self.desig_label = self.add(Label(begin_y=2, begin_x=1, text=""), "Desig Label")
         self.pop_label = self.add(Label(begin_y=3, begin_x=1, text=""), "Pop Label")
         self.resource_label = self.add(

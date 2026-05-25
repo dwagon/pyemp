@@ -1,12 +1,14 @@
 """Curses UI"""
 
 import curses
-import sys
-from typing import Optional
+from typing import Optional, Generator
+from treelib import Tree
 
 from .keys import Keys
 from .widget import Widget
 from .window import Window
+
+ROOT_ID = "_root"
 
 
 #######################################################################################
@@ -23,84 +25,67 @@ class UI:
         curses.mousemask(curses.ALL_MOUSE_EVENTS)
         curses.curs_set(0)  # Invisible cursor
         self.stdscr.keypad(True)
-        self._widgets: list[Widget] = []
-        self.root = None
+        self.widget_tree = Tree()
+        self.widget_tree.create_node(identifier=ROOT_ID, data=self)
+        self.root_window = None
         self._focus: Optional[Widget] = None
+        lines = curses.LINES  # pylint: disable=no-member
+        cols = curses.COLS  # pylint: disable=no-member
+        self.root_window = self.stdscr.derwin(lines, cols, 0, 0)
 
     ###################################################################################
     def layout(self):
         """Layout the objects"""
-        lines = curses.LINES  # pylint: disable=no-member
-        cols = curses.COLS  # pylint: disable=no-member
-        self.root = self.stdscr.derwin(lines, cols, 0, 0)
-        for widget in self._widgets:
-            widget.layout()
+        self.debug("layout()")
+        for node in self.widget_tree.all_nodes():
+            if node.identifier == ROOT_ID:
+                continue
+            node.data.layout()
+        self._focus = list(self.children_widgets())[0]
+        self.debug(f"{self._focus=}")
 
     ###################################################################################
     def focus_on(self, widget: Widget):
         """Set initial focus"""
-        self.debug(f"{self._widgets=} {widget=}")
-        while widget not in self._widgets:
-            widget = widget.parent_widget
-        self._focus = self._widgets.index(widget)
         widget.focus = True
 
     ###################################################################################
-    def focus_widget(self, focus_on_widget: Widget) -> None:
-        """Set focus on specific widget"""
-        for widget in self._widgets:
-            if widget.focus:
-                widget.loseFocus()
-            widget.focus = False
-        focus_on_widget.focus = True
-        focus_on_widget.gainFocus()
-
-    ###################################################################################
     def focus_next(self) -> None:
-        """Move focus to next widget"""
-        index = self._widgets.index(self._focus)
-        looped = False
-        while True:
-            index += 1
-            if index >= len(self._widgets):
-                if looped:  # No suitable widgets
-                    return
-                looped = True
-                index = 0
-            if self._widgets[index].focusable:
-                self.focus_widget(self._widgets[index])
-                return
+        """Focus on the next child widget"""
+        self.debug("focus_next()")
 
     ###################################################################################
     def focus_prev(self) -> None:
-        """Move focus to prev widget"""
-        index = self._widgets.index(self._focus)
-        looped = False
-        while True:
-            index -= 1
-            if index < 0:
-                if looped:  # No suitable widgets
-                    return
-                looped = True
-                index = len(self._widgets)
-            if self._widgets[index].focusable:
-                self.focus_widget(self._widgets[index])
-                return
+        """Focus on the previous child widget"""
+        self.debug("focus_prev()")
+
+    ###################################################################################
+    def children_widgets(self) -> Generator[Widget, None, None]:
+        """Return all children widgets"""
+        for _ in self.widget_tree.children(ROOT_ID):
+            yield _.data
 
     ###################################################################################
     def add(self, widget: Widget, name: str = "") -> Widget:
         """Add a widget to the screen"""
         if not isinstance(widget, Window):
-            print(
-                f"Can only add Window() to UI, not {widget}", file=open("/tmp/err", "a")
-            )
-            sys.exit(2)
+            raise RuntimeError(f"Can only add Window() to UI, not {widget}")
+        name = widget.name if widget.name else name
         if not name:
             name = widget.assign_name()
         widget.name = name
-        self._widgets.append(widget)
-        widget.set_parent(self.stdscr)
+        widget.root_ui = self
+        node = self.widget_tree.create_node(tag=name, data=widget, parent=ROOT_ID)
+        widget.node_id = node.identifier
+        widget.set_parent(self.root_window)
+        self.debug(f"Adding {name=} {node=} {widget=}")
+
         return widget
+
+    ###################################################################################
+    def draw(self):
+        """Nothing to draw"""
+        pass
 
     ###################################################################################
     def mainloop(self):
@@ -108,8 +93,8 @@ class UI:
         self.layout()
         while True:
             self.stdscr.clear()
-            for widget in self._widgets:
-                widget.draw()
+            for node in self.widget_tree.all_nodes():
+                node.data.draw()
             curses.doupdate()
 
             # If you do window.getch() it can't handle escape sequences for unknown reasons

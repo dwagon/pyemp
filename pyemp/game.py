@@ -59,7 +59,6 @@ class Game:
                 bindings={Keys.KEY_Q: self.quit},
             ),
         )
-
         self.map_win = self.base_window.add(
             MapWindow(
                 self,

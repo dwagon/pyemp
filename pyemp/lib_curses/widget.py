@@ -5,6 +5,8 @@ from collections import namedtuple
 from enum import StrEnum, Enum, auto
 from typing import Callable, Any, Self, Optional
 
+import treelib
+
 from .keys import Keys
 from .mouse_events import MouseEvent
 
@@ -41,7 +43,8 @@ class Widget:
         self.border = kwargs.get("border", False)
         self.name = kwargs.get("name", "")
         self.focus = False
-        self.parent_widget = None
+        self.root_ui = None
+        self.node_id = ""
         self.focusable = kwargs.get("focusable", True)
         self.bindings: dict[Keys, Callable[[], None]] = kwargs.get("bindings", {})
         self.mouse_bindings: dict[MouseEvent, Callable[[int, int], None]] = {}
@@ -53,6 +56,11 @@ class Widget:
         self._parent_window = None
         self._window = None
         self._border_window = None
+
+    ###################################################################################
+    @property
+    def widget_tree(self) -> treelib.Tree:
+        return self.root_ui.widget_tree
 
     ###################################################################################
     def debug(self, msg: str):
@@ -103,6 +111,7 @@ class Widget:
     def layout(self) -> None:
         """Create the curses implementation of the widget
         Happens after object creation and before drawing for the first time"""
+        self.debug("layout()")
         if self.border:
             self.layout_border_window()
         self.layout_window()
@@ -173,7 +182,7 @@ class Widget:
             height = requested.height - (2 if (not border_win and self.border) else 0)
         height = min_h if height < min_h else height
         height = max_h if height > max_h else height
-        self.debug(f"calculate_height() {min_h=} {max_h=} {height=}")
+        # self.debug(f"calculate_height() {min_h=} {max_h=} {height=}")
         return height
 
     ###################################################################################
@@ -193,7 +202,7 @@ class Widget:
             width = requested.width - (2 if (not border_win and self.border) else 0)
         width = min_w if width < min_w else width
         width = max_w if width > max_w else width
-        self.debug(f"calculate_width() {min_w=} {max_w=} {width=}")
+        # self.debug(f"calculate_width() {min_w=} {max_w=} {width=}")
 
         return width
 
