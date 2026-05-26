@@ -72,7 +72,7 @@ class ButtonBox(Container):
             self.width = x_need
         if self.height is None:
             self.height = y_need
-        for num, button in enumerate(self._widgets):
+        for num, button in enumerate(self.children_widgets()):
             if button.selected:
                 self.selected = num
         super().layout()
@@ -81,7 +81,7 @@ class ButtonBox(Container):
     def get_buttons_width(self) -> int:
         """Return the required_width of all the buttons"""
         width = 0
-        for button in self._widgets:
+        for button in self.children_widgets():
             if self.direction == ButtonDirection.HORIZONTAL:
                 width += button.required_width + (2 if button.border else 0)
             else:
@@ -92,7 +92,7 @@ class ButtonBox(Container):
     def get_buttons_height(self) -> int:
         """Return the required_height of all the buttons"""
         height = 0
-        for button in self._widgets:
+        for button in self.children_widgets():
             if self.direction == ButtonDirection.VERTICAL:
                 height += button.required_height + (2 if button.border else 0)
             else:
@@ -119,7 +119,6 @@ class ButtonBox(Container):
         assert isinstance(
             widget, Button
         ), f"Widgets added to a ButtonBox must be Buttons not {type(widget)}"
-
         widget.begin_x = self.tmp_button_x
         widget.begin_y = self.tmp_button_y
 

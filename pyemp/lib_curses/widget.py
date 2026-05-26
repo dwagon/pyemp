@@ -5,6 +5,8 @@ from collections import namedtuple
 from enum import StrEnum, Enum, auto
 from typing import Callable, Any, Self, Optional
 
+import treelib
+
 from .keys import Keys
 from .mouse_events import MouseEvent
 
@@ -40,19 +42,27 @@ class Widget:
         self.width: Optional[int] = kwargs.get("width", None)
         self.border = kwargs.get("border", False)
         self.name = kwargs.get("name", "")
-        self.focus = False
-        self.parent_widget = None
+        self.fit = kwargs.get("fit", FitType.MAX_FIT)
         self.focusable = kwargs.get("focusable", True)
+        self.focus = False
+        self.root_ui = None
+        self.node_id = ""
+        self._laid_out = False
         self.bindings: dict[Keys, Callable[[], None]] = kwargs.get("bindings", {})
         self.mouse_bindings: dict[MouseEvent, Callable[[int, int], None]] = {}
         self.misc_bindings: dict[BindingName, Optional[Callable[[], None]]] = {
             BindingName.GAIN_FOCUS: kwargs.get("gainfocus"),
             BindingName.LOSE_FOCUS: kwargs.get("loosefocus"),
         }
-        self.fit = kwargs.get("fit", FitType.MAX_FIT)
         self._parent_window = None
         self._window = None
         self._border_window = None
+
+    ###################################################################################
+    @property
+    def widget_tree(self) -> treelib.Tree:
+        """Shortcut to the widget tree"""
+        return self.root_ui.widget_tree
 
     ###################################################################################
     def debug(self, msg: str):
@@ -103,9 +113,12 @@ class Widget:
     def layout(self) -> None:
         """Create the curses implementation of the widget
         Happens after object creation and before drawing for the first time"""
+        if self._laid_out:
+            return
         if self.border:
             self.layout_border_window()
         self.layout_window()
+        self._laid_out = True
 
     ###################################################################################
     def layout_window(self) -> None:
@@ -119,16 +132,16 @@ class Widget:
         size = self.calc_window_size(req_size, border_win=False)
 
         if self._border_window:
-            self.debug(
-                f"derwinA({size.height}, {size.width}, {size.begin_y}, {size.begin_x})"
-            )
+            # self.debug(
+            #     f"derwinA({size.height}, {size.width}, {size.begin_y}, {size.begin_x})"
+            # )
             self._window = self._border_window.derwin(
                 size.height, size.width, size.begin_y, size.begin_x
             )
         else:
-            self.debug(
-                f"derwinB({size.height}, {size.width}, {size.begin_y}, {size.begin_x})"
-            )
+            # self.debug(
+            #     f"derwinB({size.height}, {size.width}, {size.begin_y}, {size.begin_x})"
+            # )
             self._window = self._parent_window.derwin(
                 size.height, size.width, size.begin_y, size.begin_x
             )
@@ -138,10 +151,10 @@ class Widget:
         """If there is a border then lay it out as a new window"""
         size = Dimension(self.height, self.width, self.begin_y, self.begin_x)
         win_size = self.calc_window_size(size, border_win=True)
-        self.debug(
-            f"border derwin({win_size.height}, {win_size.width}, "
-            f"{win_size.begin_y}, {win_size.begin_x})"
-        )
+        # self.debug(
+        #     f"border derwin({win_size.height}, {win_size.width}, "
+        #     f"{win_size.begin_y}, {win_size.begin_x})"
+        # )
         self._border_window = self._parent_window.derwin(
             win_size.height, win_size.width, win_size.begin_y, win_size.begin_x
         )
@@ -173,7 +186,7 @@ class Widget:
             height = requested.height - (2 if (not border_win and self.border) else 0)
         height = min_h if height < min_h else height
         height = max_h if height > max_h else height
-        self.debug(f"calculate_height() {min_h=} {max_h=} {height=}")
+        # self.debug(f"calculate_height() {min_h=} {max_h=} {height=}")
         return height
 
     ###################################################################################
@@ -193,7 +206,9 @@ class Widget:
             width = requested.width - (2 if (not border_win and self.border) else 0)
         width = min_w if width < min_w else width
         width = max_w if width > max_w else width
-        self.debug(f"calculate_width() {min_w=} {max_w=} {width=}")
+        # self.debug(
+        #     f"calculate_width() req={requested.width} {min_w=} {max_w=} {self.fit=} {width=}"
+        # )
 
         return width
 
@@ -212,9 +227,9 @@ class Widget:
     ###################################################################################
     def handle_input(self, key: Keys) -> bool:
         """Handle character input - return if event handled"""
-        self.debug(f"\t{self.bindings=}")
+        # self.debug(f"\t{self.bindings=}")
         if key in self.bindings:
-            self.debug(f"\thandle_input({key=})")
+            self.debug(f"\thandle_input({key=} {self.bindings[key]=})")
             self.bindings[key]()
             return True
         return False

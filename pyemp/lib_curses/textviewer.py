@@ -14,7 +14,7 @@ class TextViewer(Widget):
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         self.text: list[str] = []
-        self.fit = FitType.MIN_FIT
+        self.fit = kwargs.get("fit", FitType.MIN_FIT)
 
     ###################################################################################
     def set_text(self, text: list[str]):

@@ -1,8 +1,7 @@
 """Container of other widgets"""
 
 import curses
-from typing import Any, Optional
-
+from typing import Any, Optional, Generator
 from .keys import Keys
 from .widget import Widget
 
@@ -23,61 +22,66 @@ class Container(Widget):
             Keys.KEY_BTAB: self.focus_prev,
         }
         self.bindings.update(kwargs.get("bindings", {}))
-        self._widgets: list[Widget] = []
+
+    ###################################################################################
+    def children_widgets(self) -> Generator[Widget, None, None]:
+        """Return all children widgets"""
+        for _ in self.widget_tree.children(self.node_id):
+            yield _.data
 
     ###################################################################################
     def layout(self):
         """Setup - outer canvas for borders,etc, inner canvas for widgets"""
         super().layout()
-        for widget in self._widgets:
+        for widget in self.children_widgets():
             widget.set_parent(self._window)
             widget.layout()
 
     ###################################################################################
     def add(self, widget: Widget, name: str = "") -> Widget:
         """Add a widget to the container"""
+        name = widget.name if widget.name else name
         if not name:
             name = widget.assign_name()
-        self._widgets.append(widget)
         widget.name = name
-        widget.parent_widget = self
+
+        widget.root_ui = self.root_ui
+        node = self.widget_tree.create_node(tag=name, data=widget, parent=self.node_id)
+        widget.node_id = node.identifier
         return widget
 
     ###################################################################################
     def delete(self, name: str):
         """Remove a widget from the container"""
-        for widget in self._widgets:
-            if widget.name == name:
-                self._widgets.remove(widget)
+        for node in self.root_ui.children(self.node_id):
+            if node.name == name:
+                self.root_ui.widget_tree.remove_node(node.identifier)
 
     ###################################################################################
     @property
     def required_height(self) -> int:
         """required_height of container"""
-        if self._widgets:
-            h = max(_.required_height for _ in self._widgets)
+        if children := list(self.children_widgets()):
+            h = max(_.required_height for _ in children)
         else:
             h = 1  # Min size
-        self.debug(f"required_height={h}")
         return h
 
     ###################################################################################
     @property
     def required_width(self) -> int:
         """required_width of container"""
-        if self._widgets:
-            w = max(_.required_width for _ in self._widgets)
+        if children := list(self.children_widgets()):
+            w = max(_.required_width for _ in children)
         else:
             w = 1  # Min size
-        self.debug(f"required_width={w}")
-
         return w
 
     ###################################################################################
     def draw(self):
         """Draw the window"""
         super().draw()
-        for widget in self._widgets:
+        for widget in self.children_widgets():
             if self.focus:
                 self._window.attron(curses.A_BOLD)
             else:
@@ -98,9 +102,9 @@ class Container(Widget):
         return False
 
     ###################################################################################
-    def focus_widget(self, focus_on_widget: Widget) -> None:
+    def focus_on_widget(self, focus_on_widget: Widget) -> None:
         """Set focus on specific widget"""
-        for widget in self._widgets:
+        for widget in self.children_widgets():
             if widget.focus:
                 widget.loseFocus()
             widget.focus = False
@@ -110,7 +114,7 @@ class Container(Widget):
     ###################################################################################
     def which_widget_has_focus(self) -> Optional[Widget]:
         """Which widget has focus"""
-        for widget in self._widgets:
+        for widget in self.children_widgets():
             if widget.focus:
                 return widget
         return None
@@ -118,39 +122,43 @@ class Container(Widget):
     ###################################################################################
     def focus_next(self) -> None:
         """Move focus to next widget"""
-        widget = self.which_widget_has_focus()
-        if not widget:
-            return
-        index = self._widgets.index(widget)
-        looped = False
+        focussed_widget = self.which_widget_has_focus()
+        children = list(self.children_widgets())
+        if not focussed_widget:
+            focussed_widget = children[0]
+
+        # Which child has focus
+        next_widget_index = -1
+        for num, widget in enumerate(children):
+            if widget == focussed_widget:
+                next_widget_index = num
+
         while True:
-            index += 1
-            if index >= len(self._widgets):
-                if looped:  # No suitable widgets
-                    return
-                looped = True
-                index = 0
-            if self._widgets[index].focusable:
-                self.focus_widget(self._widgets[index])
+            next_widget_index = (next_widget_index + 1) % len(children)
+            if children[next_widget_index].focusable:
+                self.focus_on_widget(children[next_widget_index])
                 return
 
     ###################################################################################
     def focus_prev(self) -> None:
         """Move focus to prev widget"""
-        widget = self.which_widget_has_focus()
-        if not widget:
-            return
-        index = self._widgets.index(widget)
-        looped = False
+        focussed_widget = self.which_widget_has_focus()
+        children = list(self.children_widgets())
+        if not focussed_widget:
+            focussed_widget = children[0]
+
+        # Which child has focus
+        next_widget_index = -1
+        for num, widget in enumerate(children):
+            if widget == focussed_widget:
+                next_widget_index = num
+
         while True:
-            index -= 1
-            if index < 0:
-                if looped:  # No suitable widgets
-                    return
-                looped = True
-                index = len(self._widgets)
-            if self._widgets[index].focusable:
-                self.focus_widget(self._widgets[index])
+            next_widget_index = (next_widget_index + (len(children) - 1)) % len(
+                children
+            )
+            if children[next_widget_index].focusable:
+                self.focus_on_widget(children[next_widget_index])
                 return
 
 

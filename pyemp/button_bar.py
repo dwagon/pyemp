@@ -13,8 +13,13 @@ class ButtonBar(ButtonBox):
         super().__init__(**kwargs)
         self.border = False
         self.game = game
+
+    ###################################################################################
+    def layout(self):
+        """Layout the buttons"""
         self.add(Button(label="Designate", callback=self.desig_callback))
         self.add(Button(label="Threshold", callback=self.thresh_callback))
+        super().layout()
 
     ###################################################################################
     def desig_callback(self):

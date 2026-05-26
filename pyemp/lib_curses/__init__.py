@@ -12,5 +12,5 @@ from .label import Label
 from .listbox import Listbox
 from .textviewer import TextViewer
 from .ui import UI
-from .widget import Widget
+from .widget import Widget, FitType
 from .window import Window

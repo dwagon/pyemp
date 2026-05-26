@@ -38,35 +38,41 @@ class MapWindow(TextViewer):
     def move_left(self) -> None:
         """move cursor left in map"""
         self.x -= 2
+        self.game.refresh()
 
     ###################################################################################
     def move_right(self) -> None:
         """move cursor right in map"""
         self.x += 2
+        self.game.refresh()
 
     ###################################################################################
     def move_up_left(self) -> None:
         """move cursor up and left in map"""
         self.x -= 1
         self.y -= 1
+        self.game.refresh()
 
     ###################################################################################
     def move_up_right(self) -> None:
         """move cursor up and right in map"""
         self.x += 1
         self.y -= 1
+        self.game.refresh()
 
     ###################################################################################
     def move_down_left(self) -> None:
         """move cursor down and left in map"""
         self.x -= 1
         self.y += 1
+        self.game.refresh()
 
     ###################################################################################
     def move_down_right(self) -> None:
         """move cursor down and right in map"""
         self.x += 1
         self.y += 1
+        self.game.refresh()
 
     ###################################################################################
     def draw(self):

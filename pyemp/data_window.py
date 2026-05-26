@@ -2,7 +2,7 @@
 
 import tabulate
 
-from pyemp.lib_curses import Container, Label, TextViewer
+from pyemp.lib_curses import Container, Label, TextViewer, FitType
 from pyemp.map_data import MapData
 from pyemp.sector import Sector, desig_name
 
@@ -17,15 +17,36 @@ class DataWindow(Container):
         super().__init__(**kwargs)
         self.game = game
         self.border = True
+        self.hex_label = None
+        self.desig_label = None
+        self.pop_label = None
+        self.resource_label = None
+        self.details = None
+
+    ###################################################################################
+    def layout(self):
+        """Layout the text fields"""
         self.hex_label = self.add(
-            Label(begin_y=1, begin_x=1, text="Hex -, -"), "Hex Label"
+            Label(begin_y=1, text="Hex -, -", height=1, fit=FitType.MAX_FIT),
+            "Hex Label",
         )
-        self.desig_label = self.add(Label(begin_y=2, begin_x=1, text=""), "Desig Label")
-        self.pop_label = self.add(Label(begin_y=3, begin_x=1, text=""), "Pop Label")
+        self.desig_label = self.add(
+            Label(begin_y=2, text="", height=1, fit=FitType.MAX_FIT),
+            "Desig Label",
+        )
+        self.pop_label = self.add(
+            Label(begin_y=3, text="", height=1, fit=FitType.MAX_FIT),
+            "Pop Label",
+        )
         self.resource_label = self.add(
-            Label(begin_y=4, begin_x=1, text=""), "Resource Label"
+            Label(begin_y=4, text="", height=1, fit=FitType.MAX_FIT),
+            "Resource Label",
         )
-        self.details = self.add(TextViewer(begin_y=6, begin_x=1, text=""), "Details")
+        self.details = self.add(
+            TextViewer(begin_y=6, text="", height=14, fit=FitType.MAX_FIT),
+            "Details",
+        )
+        super().layout()
 
     ###################################################################################
     def update(self, x: int, y: int, mapdata: MapData):
@@ -36,11 +57,12 @@ class DataWindow(Container):
         m = mapdata[(x, y)]
         des_str = get_desig_str(m)
         self.desig_label.set_text(des_str)
-        if m.civ is None:
-            return
-        self.pop_label.set_text(
-            f"Civs: {m.civ}/{m.c_dist}, UW: {m.uw}/{m.u_dist}, Mil: {m.mil}/{m.m_dist}",
-        )
+        if m.civ is None and m.mil is None and m.uw is None:
+            self.pop_label.set_text("")
+        else:
+            self.pop_label.set_text(
+                f"Civs: {m.civ}/{m.c_dist}, UW: {m.uw}/{m.u_dist}, Mil: {m.mil}/{m.m_dist}",
+            )
 
         self.resource_label.set_text(
             f"Resource: Iron: {m.min}, Gold: {m.gold}, "

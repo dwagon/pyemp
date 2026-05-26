@@ -59,7 +59,6 @@ class Game:
                 bindings={Keys.KEY_Q: self.quit},
             ),
         )
-
         self.map_win = self.base_window.add(
             MapWindow(
                 self,
@@ -114,7 +113,7 @@ class Game:
         self.log_buffer.append(msg)
 
     ###################################################################################
-    def refresh_screen(self):
+    def refresh(self):
         """Refresh screen"""
         self.x, self.y = self.map_win.get_coords()
         self.data_win.update(x=self.x, y=self.y, mapdata=self.map)
@@ -123,7 +122,6 @@ class Game:
     ###################################################################################
     def main_loop(self) -> None:
         """Main event loop"""
-        self.refresh_screen()
         self.ui.mainloop()
 
 
