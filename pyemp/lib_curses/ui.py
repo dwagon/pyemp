@@ -36,13 +36,12 @@ class UI:
     ###################################################################################
     def layout(self):
         """Layout the objects"""
-        self.debug("layout()")
-        for node in self.widget_tree.all_nodes():
-            if node.identifier == ROOT_ID:
-                continue
-            node.data.layout()
-        self._focus = list(self.children_widgets())[0]
-        self.debug(f"{self._focus=}")
+        # self.debug("layout()")
+        for widget in self.children_widgets():
+            if not self._focus:
+                self._focus = widget
+            widget.layout()
+        # self.debug(f"{self._focus=}")
 
     ###################################################################################
     def focus_on(self, widget: Widget):
@@ -84,19 +83,18 @@ class UI:
 
     ###################################################################################
     def draw(self):
-        """Nothing to draw"""
-        pass
+        """Draw all the things"""
+        self.stdscr.clear()
+        for widget in self.children_widgets():
+            widget.draw()
+        curses.doupdate()
 
     ###################################################################################
     def mainloop(self):
         """Event loop for curses"""
         self.layout()
         while True:
-            self.stdscr.clear()
-            for node in self.widget_tree.all_nodes():
-                node.data.draw()
-            curses.doupdate()
-
+            self.draw()
             # If you do window.getch() it can't handle escape sequences for unknown reasons
             ch = self.stdscr.getch()
             if ch == curses.KEY_MOUSE:
@@ -114,7 +112,7 @@ class UI:
         try:
             key_ch = Keys(ch)
         except ValueError:
-            self.debug(f"handle_focus_change_input({ch=})")
+            # self.debug(f"handle_focus_change_input({ch=})")
             key_ch = Keys.KEY_NONE
         if key_ch == Keys.KEY_TAB:
             self.focus_next()

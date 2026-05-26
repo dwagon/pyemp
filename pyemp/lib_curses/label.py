@@ -15,7 +15,7 @@ class Label(Widget):
         super().__init__(**kwargs)
         self.text = kwargs.get("text", "XXXXXXXX")
         self.focusable = False
-        self.fit = FitType.MIN_FIT
+        self.fit = kwargs.get("fit", FitType.MIN_FIT)
 
     ###################################################################################
     def draw(self):

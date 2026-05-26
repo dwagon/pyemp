@@ -34,7 +34,6 @@ class Container(Widget):
         """Setup - outer canvas for borders,etc, inner canvas for widgets"""
         super().layout()
         for widget in self.children_widgets():
-            self.debug(f"layout {widget=}")
             widget.set_parent(self._window)
             widget.layout()
 
@@ -62,23 +61,20 @@ class Container(Widget):
     @property
     def required_height(self) -> int:
         """required_height of container"""
-        if self.widget_tree.children(self.node_id):
-            h = max(_.required_height for _ in self.children_widgets())
+        if children := list(self.children_widgets()):
+            h = max(_.required_height for _ in children)
         else:
             h = 1  # Min size
-        self.debug(f"required_height={h}")
         return h
 
     ###################################################################################
     @property
     def required_width(self) -> int:
         """required_width of container"""
-        if self.children_widgets():
-            w = max(_.required_width for _ in self.children_widgets())
+        if children := list(self.children_widgets()):
+            w = max(_.required_width for _ in children)
         else:
             w = 1  # Min size
-        self.debug(f"required_width={w}")
-
         return w
 
     ###################################################################################

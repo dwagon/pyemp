@@ -19,6 +19,7 @@ class ButtonBar(ButtonBox):
         """Layout the buttons"""
         self.add(Button(label="Designate", callback=self.desig_callback))
         self.add(Button(label="Threshold", callback=self.thresh_callback))
+        super().layout()
 
     ###################################################################################
     def desig_callback(self):
