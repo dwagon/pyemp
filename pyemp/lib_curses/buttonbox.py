@@ -5,7 +5,6 @@ from typing import Any
 
 from .button import Button
 from .container import Container
-from .keys import Keys
 from .widget import Widget, FitType
 
 
@@ -41,27 +40,9 @@ class ButtonBox(Container):
         # Where the next button starts
         self.tmp_button_x = 0
         self.tmp_button_y = 0
-        self.selected = 0  # Which button, if any, is selected
         self.fit = FitType.MIN_FIT
-        self.bindings = {
-            Keys.KEY_LEFT: self.prev,
-            Keys.KEY_RIGHT: self.next,
-        }
+        self.bindings = {}
         self.bindings.update(kwargs.get("bindings", {}))
-
-    ###################################################################################
-    def next(self):
-        """User has selected next button"""
-        self._widgets[self.selected].selected = False
-        self.selected = (self.selected + 1) % len(self._widgets)
-        self._widgets[self.selected].selected = True
-
-    ###################################################################################
-    def prev(self):
-        """User has selected previous button"""
-        self._widgets[self.selected].selected = False
-        self.selected = (self.selected + (len(self._widgets) - 1)) % len(self._widgets)
-        self._widgets[self.selected].selected = True
 
     ###################################################################################
     def layout(self):
@@ -72,9 +53,6 @@ class ButtonBox(Container):
             self.width = x_need
         if self.height is None:
             self.height = y_need
-        for num, button in enumerate(self.children_widgets()):
-            if button.selected:
-                self.selected = num
         super().layout()
 
     ###################################################################################

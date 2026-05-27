@@ -15,6 +15,7 @@ class TextViewer(Widget):
         super().__init__(**kwargs)
         self.text: list[str] = []
         self.fit = kwargs.get("fit", FitType.MIN_FIT)
+        self.focusable = False
 
     ###################################################################################
     def set_text(self, text: list[str]):

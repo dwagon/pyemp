@@ -3,6 +3,7 @@
 import curses
 from typing import Optional, Callable, Any
 
+from .keys import Keys
 from .mouse_events import MouseEvent
 from .widget import Widget, FitType
 
@@ -20,18 +21,25 @@ class Button(Widget):
         self.callback: Optional[Callable[[], None]] = kwargs.get("callback", None)
         self.border: bool = kwargs.get("border", True)
         self.mouse_bindings = {MouseEvent.BUTTON1_CLICKED: self.clicked}
+        self.bindings = {Keys.KEY_ENTER: self.pressed, Keys.KEY_RETURN: self.pressed}
         self.fit = FitType.MIN_FIT
-        self.selected = kwargs.get("selected", False)
 
     ###################################################################################
     def draw(self):
         """Draw the button"""
         super().draw()
-        if self.selected:
+        if self.focus:
             self._window.attron(curses.A_REVERSE)
         else:
             self._window.attroff(curses.A_REVERSE)
         self._window.addstr(0, 0, self.label)
+
+    ###################################################################################
+    def pressed(self):
+        """Button has been pressed / selected"""
+        self.debug("Pressed")
+        if self.callback:
+            self.callback()
 
     ###################################################################################
     def clicked(self, x: int, y: int):
@@ -39,8 +47,7 @@ class Button(Widget):
         y1, x1 = self._window.getbegyx()
         y2, x2 = self._window.getmaxyx()
         if x1 < x < x2 and y1 < y < y2:
-            if self.callback:
-                self.callback()
+            self.pressed()
 
     ###################################################################################
     def is_clicked(self, mouse_y: int, mouse_x: int) -> bool:
