@@ -1,7 +1,8 @@
 """Curses UI"""
 
 import curses
-from typing import Optional, Generator
+from typing import Optional
+
 from treelib import Tree
 
 from .keys import Keys
@@ -26,49 +27,111 @@ class UI:
         curses.curs_set(0)  # Invisible cursor
         self.stdscr.keypad(True)
         self.widget_tree = Tree()
-        self.widget_tree.create_node(identifier=ROOT_ID, data=self)
+        self.node_id = ROOT_ID
+        self.widget_tree.create_node(identifier=self.node_id, data=self)
         self.root_window = None
-        self._focus: Optional[Widget] = None
         lines = curses.LINES  # pylint: disable=no-member
         cols = curses.COLS  # pylint: disable=no-member
         self.root_window = self.stdscr.derwin(lines, cols, 0, 0)
+        self.bindings = {
+            Keys.KEY_RIGHT: self.focus_next,
+            Keys.KEY_TAB: self.focus_next,
+            Keys.KEY_LEFT: self.focus_prev,
+            Keys.KEY_BTAB: self.focus_prev,
+        }
+
+    ###################################################################################
+    def all_widgets(self) -> list[Widget]:
+        """Return all widgets"""
+        widgets = [
+            _.data for _ in self.widget_tree.all_nodes() if _.identifier != ROOT_ID
+        ]
+        return widgets
 
     ###################################################################################
     def layout(self):
         """Layout the objects"""
-        # self.debug("layout()")
-        for widget in self.children_widgets():
-            if not self._focus:
-                self._focus = widget
-            widget.layout()
-        # self.debug(f"{self._focus=}")
+        self.child_window().layout()
+        self.debug(self.widget_tree.show(stdout=False))
 
     ###################################################################################
-    def focus_on(self, widget: Widget):
-        """Set initial focus"""
-        widget.focus = True
+    def focus_on_widget(self, focus_on_widget: Widget) -> None:
+        """Set focus on specific widget"""
+        for widget in self.all_widgets():
+            if widget.focus:
+                widget.loseFocus()
+            widget.focus = False
+        focus_on_widget.focus = True
+        focus_on_widget.gainFocus()
+
+    ###################################################################################
+    def which_widget_has_focus(self) -> Optional[Widget]:
+        """Which widget has focus"""
+        for widget in self.all_widgets():
+            if widget.focus:
+                return widget
+        return None
 
     ###################################################################################
     def focus_next(self) -> None:
-        """Focus on the next child widget"""
-        self.debug("focus_next()")
+        """Move focus to next widget"""
+        focussed_widget = self.which_widget_has_focus()
+        all_widgets = self.all_widgets()
+        if not focussed_widget:
+            focussed_widget = all_widgets[0]
+
+        # Which child has focus
+        next_widget_index = -1
+        for num, widget in enumerate(all_widgets):
+            if widget == focussed_widget:
+                next_widget_index = num
+
+        count = len(all_widgets)
+        while count:
+            next_widget_index = (next_widget_index + 1) % len(all_widgets)
+            if all_widgets[next_widget_index].focusable:
+                self.focus_on_widget(all_widgets[next_widget_index])
+                return
+            count -= 1
 
     ###################################################################################
     def focus_prev(self) -> None:
-        """Focus on the previous child widget"""
-        self.debug("focus_prev()")
+        """Move focus to prev widget"""
+        focussed_widget = self.which_widget_has_focus()
+        all_widgets = self.all_widgets()
+        if not focussed_widget:
+            focussed_widget = all_widgets[0]
+
+        # Which child has focus
+        next_widget_index = -1
+        for num, widget in enumerate(all_widgets):
+            if widget == focussed_widget:
+                next_widget_index = num
+
+        count = len(all_widgets)
+        while count:
+            next_widget_index = (next_widget_index + (len(all_widgets) - 1)) % len(
+                all_widgets
+            )
+            if all_widgets[next_widget_index].focusable:
+                self.focus_on_widget(all_widgets[next_widget_index])
+                return
+            count += 1
 
     ###################################################################################
-    def children_widgets(self) -> Generator[Widget, None, None]:
-        """Return all children widgets"""
-        for _ in self.widget_tree.children(ROOT_ID):
-            yield _.data
+    def child_window(self) -> Widget:
+        """Return the child window of UI"""
+        return list(self.widget_tree.children(ROOT_ID))[0].data
 
     ###################################################################################
     def add(self, widget: Widget, name: str = "") -> Widget:
         """Add a widget to the screen"""
         if not isinstance(widget, Window):
             raise RuntimeError(f"Can only add Window() to UI, not {widget}")
+        if self.widget_tree.size() > 1:
+            raise RuntimeError(
+                f"Can only have one child of root UI, not {self.widget_tree.size()}"
+            )
         name = widget.name if widget.name else name
         if not name:
             name = widget.assign_name()
@@ -77,7 +140,6 @@ class UI:
         node = self.widget_tree.create_node(tag=name, data=widget, parent=ROOT_ID)
         widget.node_id = node.identifier
         widget.set_parent(self.root_window)
-        self.debug(f"Adding {name=} {node=} {widget=}")
 
         return widget
 
@@ -85,8 +147,7 @@ class UI:
     def draw(self):
         """Draw all the things"""
         self.stdscr.clear()
-        for widget in self.children_widgets():
-            widget.draw()
+        self.child_window().draw()
         curses.doupdate()
 
     ###################################################################################
@@ -98,53 +159,33 @@ class UI:
             # If you do window.getch() it can't handle escape sequences for unknown reasons
             ch = self.stdscr.getch()
             if ch == curses.KEY_MOUSE:
-                self.handle_mouse_event()
-            if self.handle_keyboard_event(ch):
-                continue
-            if self.handle_focus_change_input(ch):
-                continue
-            if self.has_finished():
-                return
-
-    ###################################################################################
-    def handle_focus_change_input(self, ch: int) -> bool:
-        """Handle input that changes focus"""
-        try:
-            key_ch = Keys(ch)
-        except ValueError:
-            # self.debug(f"handle_focus_change_input({ch=})")
-            key_ch = Keys.KEY_NONE
-        if key_ch == Keys.KEY_TAB:
-            self.focus_next()
-            return True
-        elif key_ch == Keys.KEY_BTAB:
-            self.focus_prev()
-            return True
-        return False
-
-    ###################################################################################
-    def handle_keyboard_event(self, key: int) -> bool:
-        """Handle a keyboard event"""
-        if self._focus:
+                if self.child_window().handle_mouse_event():
+                    continue
             try:
-                keys_ch = Keys(key)
+                key_ch = Keys(ch)
             except ValueError:
-                self.debug(f"Non Key input {key}")
-            else:
-                return self._focus.handle_input(keys_ch)
-
-        self.debug(f"unhandled input {key=}")
-        return False
+                self.debug(f"Non Key input {ch}")
+                continue
+            self.handle_key_input(key_ch)
 
     ###################################################################################
-    def handle_mouse_event(self):
-        """Handle a mouse event"""
-        for widget in self._widgets:
-            widget.handle_mouse()
+    def handle_key_input(self, key: Keys):
+        """Handle keyboard input"""
+        if widget := self.which_widget_has_focus():
+            if widget.handle_keyboard_input(key):
+                return
+            while self.widget_tree.parent(widget.node_id):
+                widget = self.widget_tree.parent(widget.node_id).data
+                if widget.handle_keyboard_input(key):
+                    return
+        self.handle_keyboard_input(key)
 
     ###################################################################################
-    def has_finished(self) -> bool:
-        """Has the widget finished doing its thing"""
+    def handle_keyboard_input(self, key: Keys) -> bool:
+        """Handle character input - return if event handled"""
+        if key in self.bindings:
+            self.bindings[key]()
+            return True
         return False
 
     ###################################################################################

@@ -225,11 +225,9 @@ class Widget:
         return max_height
 
     ###################################################################################
-    def handle_input(self, key: Keys) -> bool:
+    def handle_keyboard_input(self, key: Keys) -> bool:
         """Handle character input - return if event handled"""
-        # self.debug(f"\t{self.bindings=}")
         if key in self.bindings:
-            self.debug(f"\thandle_input({key=} {self.bindings[key]=})")
             self.bindings[key]()
             return True
         return False
@@ -254,7 +252,7 @@ class Widget:
         self._parent_window = window
 
     ###################################################################################
-    def handle_mouse(self) -> None:
+    def handle_mouse_event(self) -> None:
         """Hande mouse input"""
         # mouse event, represented as a 5-tuple (id, x, y, z, bstate)
         if not self.mouse_bindings:
