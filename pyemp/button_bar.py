@@ -13,6 +13,7 @@ class ButtonBar(ButtonBox):
         super().__init__(**kwargs)
         self.border = False
         self.game = game
+        self.focusable = False
 
     ###################################################################################
     def layout(self):

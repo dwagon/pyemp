@@ -57,6 +57,7 @@ class Game:
                 width=cols,
                 name="Game",
                 bindings={Keys.KEY_Q: self.quit},
+                focusable=False,
             ),
         )
         self.map_win = self.base_window.add(
@@ -100,7 +101,7 @@ class Game:
             ),
             "buttons",
         )
-        self.ui.focus_on(self.map_win)
+        self.ui.focus_on_widget(self.map_win)
 
     ###################################################################################
     def quit(self) -> None:

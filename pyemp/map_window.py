@@ -20,6 +20,7 @@ class MapWindow(TextViewer):
         self.map = kwargs.get("map")
         self.x = 0
         self.y = 0
+        self.focusable = True
         self.bindings = {
             Keys.KEY_G: self.move_left,
             Keys.KEY_J: self.move_right,
