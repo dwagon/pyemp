@@ -49,7 +49,7 @@ class Widget:
         self.node_id = ""
         self._laid_out = False
         self.bindings: dict[Keys, Callable[[], None]] = kwargs.get("bindings", {})
-        self.mouse_bindings: dict[MouseEvent, Callable[[int, int], None]] = {}
+        self.mouse_bindings: dict[MouseEvent, Callable[[int, int, int], None]] = {}
         self.misc_bindings: dict[BindingName, Optional[Callable[[], None]]] = {
             BindingName.GAIN_FOCUS: kwargs.get("gainfocus"),
             BindingName.LOSE_FOCUS: kwargs.get("loosefocus"),
@@ -69,6 +69,11 @@ class Widget:
         """Debug log"""
         with open("/tmp/widget_err", "a", encoding="utf-8") as outfh:
             outfh.write(f"{repr(self)}: {msg}\n")
+
+    ###################################################################################
+    def enclose(self, y: int, x: int) -> bool:
+        """Is the coord in our window?"""
+        return self._window.enclose(y, x)
 
     ###################################################################################
     def gainFocus(self):
@@ -252,32 +257,15 @@ class Widget:
         self._parent_window = window
 
     ###################################################################################
-    def handle_mouse_event(self) -> None:
+    def handle_mouse_event(self, x: int, y: int, bstate: int) -> None:
         """Hande mouse input"""
         # mouse event, represented as a 5-tuple (id, x, y, z, bstate)
         if not self.mouse_bindings:
             return None
-        mouse_event = curses.getmouse()
-        _, x, y, _, _ = mouse_event
-        if self.in_window(x, y):
-            for binding, callback in self.mouse_bindings.items():
-                if binding & mouse_event[4]:
-                    return callback(mouse_event[1], mouse_event[2])
-        curses.ungetmouse(
-            mouse_event[0],
-            mouse_event[1],
-            mouse_event[2],
-            mouse_event[3],
-            mouse_event[4],
-        )
+        for binding, callback in self.mouse_bindings.items():
+            if binding & bstate:
+                return callback(x, y, bstate)
         return None
-
-    ###################################################################################
-    def in_window(self, x: int, y: int) -> bool:
-        """Return if x,y is in this window"""
-        y1, x1 = self._window.getbegyx()
-        y2, x2 = self._window.getmaxyx()
-        return x1 < x < x2 and y1 < y < y2
 
 
 # EOF
