@@ -58,6 +58,7 @@ class Game:
                 name="Game",
                 bindings={Keys.KEY_Q: self.quit},
                 focusable=False,
+                update_callback=self.refresh,
             ),
         )
         self.map_win = self.base_window.add(

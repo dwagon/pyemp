@@ -54,6 +54,7 @@ class Widget:
             BindingName.GAIN_FOCUS: kwargs.get("gainfocus"),
             BindingName.LOSE_FOCUS: kwargs.get("loosefocus"),
         }
+        self.update_callback = kwargs.get("update_callback", None)
         self._parent_window = None
         self._window = None
         self._border_window = None
