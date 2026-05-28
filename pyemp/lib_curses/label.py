@@ -13,7 +13,7 @@ class Label(Widget):
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
-        self.text = kwargs.get("text", "XXXXXXXX")
+        self.text = kwargs.get("text", "")
         self.focusable = False
         self.fit = kwargs.get("fit", FitType.MIN_FIT)
 
