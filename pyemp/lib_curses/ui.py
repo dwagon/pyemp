@@ -151,10 +151,19 @@ class UI:
         curses.doupdate()
 
     ###################################################################################
+    def update_callbacks(self):
+        """Process all widgets update callbacks"""
+        all_widgets = self.all_widgets()
+        for widget in all_widgets:
+            if widget.update_callback:
+                widget.update_callback()
+
+    ###################################################################################
     def mainloop(self):
         """Event loop for curses"""
         self.layout()
         while True:
+            self.update_callbacks()
             self.draw()
             # If you do window.getch() it can't handle escape sequences for unknown reasons
             ch = self.stdscr.getch()

@@ -20,7 +20,11 @@ class Button(Widget):
         self.value = kwargs.get("value", "")
         self.callback: Optional[Callable[[], None]] = kwargs.get("callback", None)
         self.border: bool = kwargs.get("border", True)
-        self.mouse_bindings = {MouseEvent.BUTTON1_CLICKED: self.clicked}
+        self.mouse_bindings = {
+            MouseEvent.BUTTON1_CLICKED: self.clicked,
+            MouseEvent.BUTTON1_PRESSED: self.clicked,
+            MouseEvent.BUTTON1_DOUBLE_CLICKED: self.clicked,
+        }
         self.bindings = {Keys.KEY_ENTER: self.pressed, Keys.KEY_RETURN: self.pressed}
         self.fit = FitType.MIN_FIT
 

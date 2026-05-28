@@ -27,23 +27,23 @@ class DataWindow(Container):
     def layout(self):
         """Layout the text fields"""
         self.hex_label = self.add(
-            Label(begin_y=1, text="Hex -, -", height=1, fit=FitType.MAX_FIT),
+            Label(begin_y=1, height=1, fit=FitType.MAX_FIT),
             "Hex Label",
         )
         self.desig_label = self.add(
-            Label(begin_y=2, text="", height=1, fit=FitType.MAX_FIT),
+            Label(begin_y=2, height=1, fit=FitType.MAX_FIT),
             "Desig Label",
         )
         self.pop_label = self.add(
-            Label(begin_y=3, text="", height=1, fit=FitType.MAX_FIT),
+            Label(begin_y=3, height=1, fit=FitType.MAX_FIT),
             "Pop Label",
         )
         self.resource_label = self.add(
-            Label(begin_y=4, text="", height=1, fit=FitType.MAX_FIT),
+            Label(begin_y=4, height=1, fit=FitType.MAX_FIT),
             "Resource Label",
         )
         self.details = self.add(
-            TextViewer(begin_y=6, text="", height=14, fit=FitType.MAX_FIT),
+            TextViewer(begin_y=6, height=14, fit=FitType.MAX_FIT),
             "Details",
         )
         super().layout()
