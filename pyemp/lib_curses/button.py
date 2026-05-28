@@ -35,28 +35,16 @@ class Button(Widget):
         self._window.addstr(0, 0, self.label)
 
     ###################################################################################
+    def clicked(self, x: int, y: int, bstate: int) -> None:
+        """Mouse has clicked on the button"""
+        _ = (x, y, bstate)  # Prevent unused arg complaint
+        self.pressed()
+
+    ###################################################################################
     def pressed(self):
         """Button has been pressed / selected"""
-        self.debug("Pressed")
         if self.callback:
             self.callback()
-
-    ###################################################################################
-    def clicked(self, x: int, y: int):
-        """Button was selected"""
-        y1, x1 = self._window.getbegyx()
-        y2, x2 = self._window.getmaxyx()
-        if x1 < x < x2 and y1 < y < y2:
-            self.pressed()
-
-    ###################################################################################
-    def is_clicked(self, mouse_y: int, mouse_x: int) -> bool:
-        """Did the user click on the button"""
-        # min_y, min_x = self.window.getbegyx()
-        # max_y, max_x = self.window.getmaxyx()
-        # if min_y < mouse_y < max_y + min_y and min_x < mouse_x < max_x + min_x:
-        #     return True
-        # return False
 
     ###################################################################################
     @property

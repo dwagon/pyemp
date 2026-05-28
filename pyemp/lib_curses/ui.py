@@ -1,7 +1,7 @@
 """Curses UI"""
 
 import curses
-from typing import Optional
+from typing import Optional, cast
 
 from treelib import Tree
 
@@ -159,14 +159,26 @@ class UI:
             # If you do window.getch() it can't handle escape sequences for unknown reasons
             ch = self.stdscr.getch()
             if ch == curses.KEY_MOUSE:
-                if self.child_window().handle_mouse_event():
-                    continue
+                self.handle_mouse_input()
+                continue
             try:
                 key_ch = Keys(ch)
             except ValueError:
                 self.debug(f"Non Key input {ch}")
                 continue
             self.handle_key_input(key_ch)
+
+    ###################################################################################
+    def handle_mouse_input(self):
+        """Handle mouse input"""
+        mouse = curses.getmouse()
+        _, x, y, _, bstate = mouse
+        self.debug(f"handle_mouse_input() {x}, {y}, {bstate}")
+        for node in self.widget_tree.leaves():
+            widget = cast(Widget, node.data)
+            if widget.enclose(y, x):
+                if widget.mouse_bindings:
+                    widget.handle_mouse_event(x, y, bstate)
 
     ###################################################################################
     def handle_key_input(self, key: Keys):
