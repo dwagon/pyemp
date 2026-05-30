@@ -91,10 +91,6 @@ class Widget:
             self.misc_bindings[BindingName.LOSE_FOCUS]()
 
     ###################################################################################
-    def mainloop(self):
-        self.root_ui.mainloop()
-
-    ###################################################################################
     def draw(self) -> None:
         """Draw the Widget"""
         if self.focus:

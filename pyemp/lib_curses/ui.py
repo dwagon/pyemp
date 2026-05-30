@@ -14,10 +14,10 @@ ROOT_ID = "_root"
 #######################################################################################
 #######################################################################################
 #######################################################################################
-class UI:
+class UI(Widget):
     """Parent Curses interface"""
 
-    def __init__(self, stdscr: Optional[curses.window] = None):
+    def __init__(self, stdscr: Optional[curses.window] = None, **kwargs):
         if stdscr:
             self.stdscr = stdscr
         else:
@@ -25,19 +25,30 @@ class UI:
         curses.mousemask(curses.ALL_MOUSE_EVENTS)
         curses.curs_set(0)  # Invisible cursor
         self.stdscr.keypad(True)
-        self.widget_tree = Tree()
+        self._widget_tree = Tree()
+        self.name = "_UI"
         self.node_id = ROOT_ID
         self.widget_tree.create_node(identifier=self.node_id, data=self)
         self.root_window = None
         lines = curses.LINES  # pylint: disable=no-member
         cols = curses.COLS  # pylint: disable=no-member
         self.root_window = self.stdscr.derwin(lines, cols, 0, 0)
-        self.bindings = {
-            Keys.KEY_RIGHT: self.focus_next,
-            Keys.KEY_TAB: self.focus_next,
-            Keys.KEY_LEFT: self.focus_prev,
-            Keys.KEY_BTAB: self.focus_prev,
-        }
+        super().__init__(**kwargs)
+        self.node_id = ROOT_ID
+        self.bindings.update(
+            {
+                Keys.KEY_RIGHT: self.focus_next,
+                Keys.KEY_TAB: self.focus_next,
+                Keys.KEY_LEFT: self.focus_prev,
+                Keys.KEY_BTAB: self.focus_prev,
+            }
+        )
+
+    ###################################################################################
+    @property
+    def widget_tree(self) -> Tree:
+        """Shortcut to the widget tree"""
+        return self._widget_tree
 
     ###################################################################################
     def all_widgets(self) -> list[Widget]:
@@ -218,10 +229,14 @@ class UI:
         return False
 
     ###################################################################################
-    def debug(self, msg: str):
-        """Debug log"""
-        with open("/tmp/widget_err", "a", encoding="utf-8") as outfh:
-            outfh.write(f"UI: {msg}\n")
+    def required_height(self) -> int:
+        """Whole screen"""
+        return curses.LINES
+
+    ###################################################################################
+    def required_width(self) -> int:
+        """Whole screen"""
+        return curses.COLS
 
 
 # EOF
