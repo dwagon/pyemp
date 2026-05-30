@@ -91,6 +91,10 @@ class Widget:
             self.misc_bindings[BindingName.LOSE_FOCUS]()
 
     ###################################################################################
+    def mainloop(self):
+        self.root_ui.mainloop()
+
+    ###################################################################################
     def draw(self) -> None:
         """Draw the Widget"""
         if self.focus:
@@ -139,14 +143,14 @@ class Widget:
 
         if self._border_window:
             # self.debug(
-            #     f"derwinA({size.height}, {size.width}, {size.begin_y}, {size.begin_x})"
+            #     f"derwinA(height={size.height}, width={size.width}, begin_y={size.begin_y}, begin_x={size.begin_x})"
             # )
             self._window = self._border_window.derwin(
                 size.height, size.width, size.begin_y, size.begin_x
             )
         else:
             # self.debug(
-            #     f"derwinB({size.height}, {size.width}, {size.begin_y}, {size.begin_x})"
+            #     f"derwinB(height={size.height}, width={size.width}, begin_y={size.begin_y}, begin_x={size.begin_x})"
             # )
             self._window = self._parent_window.derwin(
                 size.height, size.width, size.begin_y, size.begin_x
@@ -158,8 +162,7 @@ class Widget:
         size = Dimension(self.height, self.width, self.begin_y, self.begin_x)
         win_size = self.calc_window_size(size, border_win=True)
         # self.debug(
-        #     f"border derwin({win_size.height}, {win_size.width}, "
-        #     f"{win_size.begin_y}, {win_size.begin_x})"
+        #     f"border(height={win_size.height}, width={win_size.width}, begin_y={win_size.begin_y}, begin_x={win_size.begin_x})"
         # )
         self._border_window = self._parent_window.derwin(
             win_size.height, win_size.width, win_size.begin_y, win_size.begin_x
@@ -184,15 +187,16 @@ class Widget:
         if self.border:
             if border_win:
                 min_h += 2
-            else:
-                max_h -= 2
+            # else:
+            #     max_h -= 2
         if requested.height is None:
             height = max_h if self.fit == FitType.MAX_FIT else min_h
         else:
-            height = requested.height - (2 if (not border_win and self.border) else 0)
+            height = requested.height
+            height += 2 if border_win else 0
         height = min_h if height < min_h else height
-        height = max_h if height > max_h else height
-        # self.debug(f"calculate_height() {min_h=} {max_h=} {height=}")
+        # height = max_h if height > max_h else height
+        # self.debug(f"calc_height() {min_h=} {max_h=} {height=}")
         return height
 
     ###################################################################################
@@ -204,16 +208,17 @@ class Widget:
         if self.border:
             if border_win:
                 min_w += 2
-            else:
-                max_w -= 2
+            # else:
+            #     max_w -= 2
         if requested.width is None:
             width = max_w if self.fit == FitType.MAX_FIT else min_w
         else:
-            width = requested.width - (2 if (not border_win and self.border) else 0)
+            width = requested.width
+            width += 2 if border_win else 0
         width = min_w if width < min_w else width
         width = max_w if width > max_w else width
         # self.debug(
-        #     f"calculate_width() req={requested.width} {min_w=} {max_w=} {self.fit=} {width=}"
+        #     f"calc_width() req={requested.width} {min_w=} {max_w=} {self.fit=} {width=}"
         # )
 
         return width

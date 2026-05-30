@@ -7,7 +7,6 @@ from treelib import Tree
 
 from .keys import Keys
 from .widget import Widget
-from .window import Window
 
 ROOT_ID = "_root"
 
@@ -51,8 +50,8 @@ class UI:
     ###################################################################################
     def layout(self):
         """Layout the objects"""
-        self.child_window().layout()
-        self.debug(self.widget_tree.show(stdout=False))
+        for widget in self.child_windows():
+            widget.layout()
 
     ###################################################################################
     def focus_on_widget(self, focus_on_widget: Widget) -> None:
@@ -78,7 +77,10 @@ class UI:
         focussed_widget = self.which_widget_has_focus()
         all_widgets = self.all_widgets()
         if not focussed_widget:
-            focussed_widget = all_widgets[0]
+            for widget in all_widgets:
+                if widget.focusable:
+                    focussed_widget = widget
+                    break
 
         # Which child has focus
         next_widget_index = -1
@@ -100,7 +102,10 @@ class UI:
         focussed_widget = self.which_widget_has_focus()
         all_widgets = self.all_widgets()
         if not focussed_widget:
-            focussed_widget = all_widgets[0]
+            for widget in all_widgets:
+                if widget.focusable:
+                    focussed_widget = widget
+                    break
 
         # Which child has focus
         next_widget_index = -1
@@ -119,19 +124,17 @@ class UI:
             count += 1
 
     ###################################################################################
-    def child_window(self) -> Widget:
+    def child_windows(self) -> list[Widget]:
         """Return the child window of UI"""
-        return list(self.widget_tree.children(ROOT_ID))[0].data
+        return list(_.data for _ in self.widget_tree.children(ROOT_ID))
 
     ###################################################################################
     def add(self, widget: Widget, name: str = "") -> Widget:
         """Add a widget to the screen"""
-        if not isinstance(widget, Window):
-            raise RuntimeError(f"Can only add Window() to UI, not {widget}")
-        if self.widget_tree.size() > 1:
-            raise RuntimeError(
-                f"Can only have one child of root UI, not {self.widget_tree.size()}"
-            )
+        # if not isinstance(widget, Window):
+        #     raise RuntimeError(f"Can only add Window() to UI, not {widget}")
+        # if self.widget_tree.size() > 1:
+        #     raise RuntimeError("Can only have one child of root UI")
         name = widget.name if widget.name else name
         if not name:
             name = widget.assign_name()
@@ -147,7 +150,8 @@ class UI:
     def draw(self):
         """Draw all the things"""
         self.stdscr.clear()
-        self.child_window().draw()
+        for widget in self.child_windows():
+            widget.draw()
         curses.doupdate()
 
     ###################################################################################
@@ -161,28 +165,32 @@ class UI:
     ###################################################################################
     def mainloop(self):
         """Event loop for curses"""
-        self.layout()
         while True:
+            self.layout()
             self.update_callbacks()
             self.draw()
-            # If you do window.getch() it can't handle escape sequences for unknown reasons
-            ch = self.stdscr.getch()
-            if ch == curses.KEY_MOUSE:
-                self.handle_mouse_input()
-                continue
-            try:
-                key_ch = Keys(ch)
-            except ValueError:
-                self.debug(f"Non Key input {ch}")
-                continue
-            self.handle_key_input(key_ch)
+            self.handle_input()
+
+    ###################################################################################
+    def handle_input(self):
+        """Handle mouse and keyboard input"""
+        # If you do window.getch() it can't handle escape sequences for unknown reasons
+        ch = self.stdscr.getch()
+        if ch == curses.KEY_MOUSE:
+            self.handle_mouse_input()
+            return
+        try:
+            key_ch = Keys(ch)
+        except ValueError:
+            self.debug(f"Non Key input {ch}")
+            return
+        self.handle_key_input(key_ch)
 
     ###################################################################################
     def handle_mouse_input(self):
         """Handle mouse input"""
         mouse = curses.getmouse()
         _, x, y, _, bstate = mouse
-        self.debug(f"handle_mouse_input() {x}, {y}, {bstate}")
         for node in self.widget_tree.leaves():
             widget = cast(Widget, node.data)
             if widget.enclose(y, x):
@@ -191,7 +199,7 @@ class UI:
 
     ###################################################################################
     def handle_key_input(self, key: Keys):
-        """Handle keyboard input"""
+        """Handle keyboard input for all widgets"""
         if widget := self.which_widget_has_focus():
             if widget.handle_keyboard_input(key):
                 return
@@ -203,7 +211,7 @@ class UI:
 
     ###################################################################################
     def handle_keyboard_input(self, key: Keys) -> bool:
-        """Handle character input - return if event handled"""
+        """Handle character input  for UI"""
         if key in self.bindings:
             self.bindings[key]()
             return True

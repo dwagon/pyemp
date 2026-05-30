@@ -21,7 +21,7 @@ class Listbox(Widget):
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         self.entries: list[ENTRY] = []
-        self._selected: Optional[int] = 0
+        self._selected = None
         self.bindings = {
             Keys.KEY_W: self.option_prev,
             Keys.KEY_J: self.option_prev,

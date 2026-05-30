@@ -37,6 +37,7 @@ class ButtonBox(Container):
             "direction", ButtonDirection.HORIZONTAL
         )
         self.alignment: ButtonAlignment = kwargs.get("alignment", ButtonAlignment.LEFT)
+        self.focusable = kwargs.get("focusable", False)
         # Where the next button starts
         self.tmp_button_x = 0
         self.tmp_button_y = 0
