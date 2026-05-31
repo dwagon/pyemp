@@ -20,6 +20,7 @@ class Dialog(Window):
         self.button_labels = kwargs.get("buttons", [])
         self.fit = FitType.MIN_FIT
         self.textviewer = None
+        self.focusable = False
         self.buttonbox = None
         self.centered = True
         self.border = True
@@ -33,7 +34,8 @@ class Dialog(Window):
             TextViewer(text=[self.message], border=False), f"dialog_{self.name}_text"
         )
         self.buttonbox = self.add(
-            ButtonBox(begin_y=2, border=False), f"dialog_{self.name}_buttons"
+            ButtonBox(begin_y=2, border=False, modal_focus=True),
+            f"dialog_{self.name}_buttons",
         )
         for button in self.button_labels:
             self.buttonbox.add(Button(label=button))
@@ -41,6 +43,7 @@ class Dialog(Window):
         self.height = self.required_height
         self.root_ui.focus_on_widget(self)
         super().layout()
+        self.root_ui.focus_on_widget(self.buttonbox)
 
     ###################################################################################
     @property

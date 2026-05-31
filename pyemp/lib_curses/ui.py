@@ -15,7 +15,9 @@ ROOT_ID = "_root"
 #######################################################################################
 #######################################################################################
 class UI(Widget):
-    """Parent Curses interface"""
+    """Parent Curses interface
+    Handles focus
+    """
 
     def __init__(self, stdscr: Optional[curses.window] = None, **kwargs):
         if stdscr:
@@ -27,6 +29,7 @@ class UI(Widget):
         self.stdscr.keypad(True)
         self._widget_tree = Tree()
         self.name = "_UI"
+        self.modal_focus_widget: Optional[Widget] = None
         self.node_id = ROOT_ID
         self.widget_tree.create_node(identifier=self.node_id, data=self)
         self.root_window = None
@@ -51,11 +54,22 @@ class UI(Widget):
         return self._widget_tree
 
     ###################################################################################
-    def all_widgets(self) -> list[Widget]:
+    def all_widgets(self, root: Tree = None) -> list[Widget]:
         """Return all widgets"""
-        widgets = [
-            _.data for _ in self.widget_tree.all_nodes() if _.identifier != ROOT_ID
-        ]
+        if not root:
+            root = self.widget_tree
+        widgets = [_.data for _ in root.all_nodes() if _.identifier != ROOT_ID]
+        return widgets
+
+    ###################################################################################
+    def all_focusable_widgets(self) -> list[Widget]:
+        """Return all widgets that are focusable"""
+
+        if self.modal_focus_widget:
+            tree = self.widget_tree.subtree(nid=self.modal_focus_widget.node_id)
+        else:
+            tree = None
+        widgets = [_ for _ in self.all_widgets(tree) if _.focusable]
         return widgets
 
     ###################################################################################
@@ -65,19 +79,19 @@ class UI(Widget):
             widget.layout()
 
     ###################################################################################
-    def focus_on_widget(self, focus_on_widget: Widget) -> None:
+    def focus_on_widget(self, focus_widget: Widget) -> None:
         """Set focus on specific widget"""
-        for widget in self.all_widgets():
-            if widget.focus:
+        for widget in self.all_focusable_widgets():
+            if focus_widget != widget and widget.focus:
                 widget.loseFocus()
             widget.focus = False
-        focus_on_widget.focus = True
-        focus_on_widget.gainFocus()
+        focus_widget.focus = True
+        focus_widget.gainFocus()
 
     ###################################################################################
     def which_widget_has_focus(self) -> Optional[Widget]:
         """Which widget has focus"""
-        for widget in self.all_widgets():
+        for widget in self.all_focusable_widgets():
             if widget.focus:
                 return widget
         return None
@@ -86,7 +100,7 @@ class UI(Widget):
     def focus_next(self) -> None:
         """Move focus to next widget"""
         focussed_widget = self.which_widget_has_focus()
-        all_widgets = self.all_widgets()
+        all_widgets = self.all_focusable_widgets()
         if not focussed_widget:
             for widget in all_widgets:
                 if widget.focusable:
@@ -111,7 +125,7 @@ class UI(Widget):
     def focus_prev(self) -> None:
         """Move focus to prev widget"""
         focussed_widget = self.which_widget_has_focus()
-        all_widgets = self.all_widgets()
+        all_widgets = self.all_focusable_widgets()
         if not focussed_widget:
             for widget in all_widgets:
                 if widget.focusable:
@@ -142,10 +156,6 @@ class UI(Widget):
     ###################################################################################
     def add(self, widget: Widget, name: str = "") -> Widget:
         """Add a widget to the screen"""
-        # if not isinstance(widget, Window):
-        #     raise RuntimeError(f"Can only add Window() to UI, not {widget}")
-        # if self.widget_tree.size() > 1:
-        #     raise RuntimeError("Can only have one child of root UI")
         name = widget.name if widget.name else name
         if not name:
             name = widget.assign_name()

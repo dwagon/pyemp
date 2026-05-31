@@ -31,6 +31,7 @@ class Widget(WidgetLayout):
         self.name = kwargs.get("name", "")
         self.focusable = kwargs.get("focusable", True)
         self.focus = False
+        self.modal_focus = kwargs.get("modal_focus", False)
         self.root_ui = None
         self.node_id = ""
         self.bindings: dict[Keys, Callable[[], None]] = kwargs.get("bindings", {})
@@ -62,6 +63,8 @@ class Widget(WidgetLayout):
     def gainFocus(self):
         """This widget has received focus"""
         self.debug("Gained focus")
+        if self.modal_focus:
+            self.root_ui.modal_focus_widget = self
         if self.misc_bindings[BindingName.GAIN_FOCUS]:
             self.misc_bindings[BindingName.GAIN_FOCUS]()
 
@@ -69,6 +72,9 @@ class Widget(WidgetLayout):
     def loseFocus(self):
         """This widget has lost focus"""
         self.debug("Lost Focus")
+        if self.root_ui.modal_focus:
+            self.root_ui.modal_focus = None
+            self.root_ui.modal_focus_widget = None
         if self.misc_bindings[BindingName.LOSE_FOCUS]:
             self.misc_bindings[BindingName.LOSE_FOCUS]()
 
