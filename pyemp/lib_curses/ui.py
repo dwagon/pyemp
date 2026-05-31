@@ -221,22 +221,16 @@ class UI(Widget):
         self.handle_keyboard_input(key)
 
     ###################################################################################
-    def handle_keyboard_input(self, key: Keys) -> bool:
-        """Handle character input  for UI"""
-        if key in self.bindings:
-            self.bindings[key]()
-            return True
-        return False
-
-    ###################################################################################
+    @property
     def required_height(self) -> int:
         """Whole screen"""
-        return curses.LINES
+        return curses.LINES  # pylint: disable=no-member
 
     ###################################################################################
+    @property
     def required_width(self) -> int:
         """Whole screen"""
-        return curses.COLS
+        return curses.COLS  # pylint: disable=no-member
 
 
 # EOF
