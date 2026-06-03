@@ -168,6 +168,17 @@ class UI(Widget):
         return widget
 
     ###################################################################################
+    def delete(self, widget: Widget) -> None:
+        """Delete a widget and all its children"""
+        subtree = self.widget_tree.remove_subtree(nid=widget.node_id)
+        for node in subtree.all_nodes():
+            widg = cast(Widget, node.data)
+            if widg.focus:
+                if widg.modal_focus:
+                    self.modal_focus_widget = None
+                self.focus_on_widget(self.all_focusable_widgets()[0])  # Make cleverer
+
+    ###################################################################################
     def draw(self):
         """Draw all the things"""
         self.stdscr.clear()
