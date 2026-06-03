@@ -48,13 +48,6 @@ class Container(Widget):
         return widget
 
     ###################################################################################
-    def delete(self, name: str):
-        """Remove a widget from the container"""
-        for node in self.root_ui.children(self.node_id):
-            if node.name == name:
-                self.root_ui.widget_tree.remove_node(node.identifier)
-
-    ###################################################################################
     @property
     def required_height(self) -> int:
         """required_height of container"""
