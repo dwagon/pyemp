@@ -3,7 +3,7 @@
 import curses
 from typing import Optional
 
-from .lib_curses.container import Container
+from .lib_curses import Window
 from .lib_curses.label import Label
 from .lib_curses.listbox import Listbox
 from .lib_curses.widget import Widget
@@ -13,7 +13,7 @@ from .sector import DESIG_KEY_MAP
 #######################################################################################
 #######################################################################################
 #######################################################################################
-class Desig_Window:
+class Desig_Window(Window):
     """Designate Sector Window"""
 
     def __init__(
@@ -26,6 +26,7 @@ class Desig_Window:
         begin_y: int = 0,
         begin_x: int = 0,
     ):
+        super().__init__(x=x, y=y, width=ncols, height=nlines)
         self.x = x
         self.y = y
         self.parent_window = window
@@ -58,14 +59,6 @@ class Desig_Window:
             ),
         )
         self.container.add_widget(self.listbox)
-
-    ###################################################################################
-    def mainloop(self):
-        """Event loop"""
-
-        self.container.mainloop()
-        ans = self.listbox.get()
-        self.new_desig = ans
 
     ###################################################################################
     def get(self) -> Optional[str]:

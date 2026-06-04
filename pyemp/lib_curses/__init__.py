@@ -7,6 +7,7 @@ type BindingType = Optional[Callable[[], None]]
 from .button import Button
 from .buttonbox import ButtonBox, ButtonDirection, ButtonAlignment
 from .container import Container
+from .dialog import Dialog, ErrorDialog
 from .keys import Keys
 from .label import Label
 from .listbox import Listbox

@@ -13,7 +13,7 @@ class TextViewer(Widget):
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
-        self.text: list[str] = []
+        self.text: list[str] = kwargs.get("text", [])
         self.fit = kwargs.get("fit", FitType.MIN_FIT)
         self.focusable = False
 
@@ -25,23 +25,23 @@ class TextViewer(Widget):
     ###################################################################################
     def draw(self) -> None:
         """Draw the text"""
-        super().draw()
         for y, line in enumerate(self.text):
             self._window.addstr(y, 0, line)
+        super().draw()
 
     ###################################################################################
     @property
     def required_width(self) -> int:
         if not self.text:
             return 1
-        return max(len(_) for _ in self.text)
+        return max(len(_) for _ in self.text) + 1
 
     ###################################################################################
     @property
     def required_height(self) -> int:
         if not self.text:
             return 1
-        return len(self.text)
+        return len(self.text) + 1
 
 
 # EOF

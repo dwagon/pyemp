@@ -1,7 +1,7 @@
 """Container for a number of buttons"""
 
 from enum import Enum, auto
-from typing import Any
+from typing import Any, Optional, cast
 
 from .button import Button
 from .container import Container
@@ -37,12 +37,19 @@ class ButtonBox(Container):
             "direction", ButtonDirection.HORIZONTAL
         )
         self.alignment: ButtonAlignment = kwargs.get("alignment", ButtonAlignment.LEFT)
+        self.focusable = kwargs.get("focusable", False)
         # Where the next button starts
         self.tmp_button_x = 0
         self.tmp_button_y = 0
+        self.selected = 0  # Which button is selected
         self.fit = FitType.MIN_FIT
         self.bindings = {}
         self.bindings.update(kwargs.get("bindings", {}))
+
+    ###################################################################################
+    def button_pressed(self, button: Button):
+        """Child button told us that it has been pressed"""
+        self.debug(f"button_pressed({button=})")
 
     ###################################################################################
     def layout(self):
@@ -106,6 +113,15 @@ class ButtonBox(Container):
         else:
             self.tmp_button_y += widget.required_height + (2 if widget.border else 0)
         return self
+
+    ###################################################################################
+    def get(self) -> Optional[str]:
+        """Return which button is selected"""
+        for button in self.children_widgets():
+            button = cast(Button, button)
+            if button.selected:
+                return button.value
+        return None
 
 
 # EOF
