@@ -62,7 +62,6 @@ class Widget(WidgetLayout):
     ###################################################################################
     def gainFocus(self):
         """This widget has received focus"""
-        self.debug("Gained focus")
         if self.modal_focus:
             self.root_ui.modal_focus_widget = self
         if self.misc_bindings[BindingName.GAIN_FOCUS]:
@@ -71,7 +70,6 @@ class Widget(WidgetLayout):
     ###################################################################################
     def loseFocus(self):
         """This widget has lost focus"""
-        self.debug("Lost Focus")
         if self.root_ui.modal_focus:
             self.root_ui.modal_focus = None
             self.root_ui.modal_focus_widget = None
@@ -81,10 +79,6 @@ class Widget(WidgetLayout):
     ###################################################################################
     def draw(self) -> None:
         """Draw the Widget"""
-        if self.focus:
-            self._window.attron(curses.A_BOLD)
-        else:
-            self._window.attroff(curses.A_BOLD)
         if self._border_window:
             if self.focus:
                 self._border_window.border(0, 0, 0, 0, "*")

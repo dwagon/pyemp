@@ -34,7 +34,7 @@ class TextViewer(Widget):
     def required_width(self) -> int:
         if not self.text:
             return 1
-        return max(len(_) for _ in self.text)
+        return max(len(_) for _ in self.text) + 1
 
     ###################################################################################
     @property

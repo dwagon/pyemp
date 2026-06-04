@@ -7,6 +7,7 @@ from treelib import Tree
 
 from .keys import Keys
 from .widget import Widget
+from .dialog import Dialog, ErrorDialog
 
 ROOT_ID = "_root"
 
@@ -75,6 +76,7 @@ class UI(Widget):
     ###################################################################################
     def layout(self):
         """Layout the objects"""
+        self.which_widget_has_focus()  # Assign focus if none
         for widget in self.child_windows():
             widget.layout()
 
@@ -87,13 +89,18 @@ class UI(Widget):
             widget.focus = False
         focus_widget.focus = True
         focus_widget.gainFocus()
+        self.debug(f"focus_on_widget({focus_widget=})")
 
     ###################################################################################
     def which_widget_has_focus(self) -> Optional[Widget]:
-        """Which widget has focus"""
+        """Which widget has focus - if none then set if possible"""
         for widget in self.all_focusable_widgets():
             if widget.focus:
                 return widget
+        # No focussed widget found
+        for widget in self.all_focusable_widgets():
+            return widget
+        # No focusable widgets found
         return None
 
     ###################################################################################
@@ -101,11 +108,6 @@ class UI(Widget):
         """Move focus to next widget"""
         focussed_widget = self.which_widget_has_focus()
         all_widgets = self.all_focusable_widgets()
-        if not focussed_widget:
-            for widget in all_widgets:
-                if widget.focusable:
-                    focussed_widget = widget
-                    break
 
         # Which child has focus
         next_widget_index = -1
@@ -126,11 +128,6 @@ class UI(Widget):
         """Move focus to prev widget"""
         focussed_widget = self.which_widget_has_focus()
         all_widgets = self.all_focusable_widgets()
-        if not focussed_widget:
-            for widget in all_widgets:
-                if widget.focusable:
-                    focussed_widget = widget
-                    break
 
         # Which child has focus
         next_widget_index = -1
@@ -164,7 +161,6 @@ class UI(Widget):
         node = self.widget_tree.create_node(tag=name, data=widget, parent=ROOT_ID)
         widget.node_id = node.identifier
         widget.set_parent(self.root_window)
-
         return widget
 
     ###################################################################################
@@ -252,6 +248,20 @@ class UI(Widget):
     def required_width(self) -> int:
         """Whole screen"""
         return curses.COLS  # pylint: disable=no-member
+
+    ###################################################################################
+    def add_dialog(self, **kwargs) -> Widget:
+        """Add a Dialog"""
+        d = Dialog(**kwargs)
+        self.add(d)
+        return d
+
+    ###################################################################################
+    def add_error_dialog(self, **kwargs) -> Widget:
+        """Add an error dialog"""
+        d = ErrorDialog(**kwargs)
+        self.add(d)
+        return d
 
 
 # EOF

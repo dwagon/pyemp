@@ -17,9 +17,10 @@ class Button(Widget):
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         self.label = kwargs["label"]
-        self.value = kwargs.get("value", "")
+        self.value = kwargs.get("value", self.label)
         self.callback: Optional[Callable[[], None]] = kwargs.get("callback", None)
         self.border: bool = kwargs.get("border", True)
+        self.selected = kwargs.get("selected", False)
         self.mouse_bindings = {
             MouseEvent.BUTTON1_CLICKED: self.clicked,
             MouseEvent.BUTTON1_PRESSED: self.clicked,
@@ -32,7 +33,7 @@ class Button(Widget):
     def draw(self):
         """Draw the button"""
         super().draw()
-        if self.focus:
+        if self.selected:
             self._window.attron(curses.A_REVERSE)
         else:
             self._window.attroff(curses.A_REVERSE)
@@ -47,6 +48,10 @@ class Button(Widget):
     ###################################################################################
     def pressed(self):
         """Button has been pressed / selected"""
+        self.selected = not self.selected
+        # Tell parent (if buttonbox) that we were pressed
+        if hasattr(self.widget_tree.parent(self.node_id).data, "button_pressed"):
+            self.widget_tree.parent(self.node_id).data.button_pressed(self)
         if self.callback:
             self.callback()
 
