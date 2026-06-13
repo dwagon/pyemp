@@ -32,7 +32,6 @@ class ButtonBar(ButtonBox):
         dw = Desig_Window(self.game.x, self.game.y)
         self.game.base_window.add(dw)
         self.debug(f"Added desig {dw} {dw._parent_window=}")
-        self.root_ui.focus_on_widget(dw)
 
         # dw.mainloop()
         # if new_desig := dw.get():

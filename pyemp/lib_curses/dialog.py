@@ -40,6 +40,7 @@ class Dialog(Window):
     ###################################################################################
     def layout(self):
         """Layout the dialog"""
+        assert len(self.buttons) != 0
         if self._laid_out:
             return
         if isinstance(self.message, str):

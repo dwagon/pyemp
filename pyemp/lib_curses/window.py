@@ -25,8 +25,6 @@ class Window(Container):
             height = self.height if self.height else 1
             self.begin_x = (curses.COLS - width) // 2  # pylint: disable=no-member
             self.begin_y = (curses.LINES - height) // 2  # pylint: disable=no-member
-            self.debug(f"{width=} {self.begin_x=} {curses.COLS=}")
-            self.debug(f"{height=} {self.begin_y=} {curses.LINES=}")
         super().layout()
 
 
