@@ -29,6 +29,9 @@ class Container(Widget):
     ###################################################################################
     def layout(self):
         """Setup - outer canvas for borders,etc, inner canvas for widgets"""
+        if self._laid_out:
+            return
+
         super().layout()
         for widget in self.children_widgets():
             widget.set_parent(self._window)
@@ -45,6 +48,7 @@ class Container(Widget):
         widget.root_ui = self.root_ui
         node = self.widget_tree.create_node(tag=name, data=widget, parent=self.node_id)
         widget.node_id = node.identifier
+        widget.set_parent(self._window)
         return widget
 
     ###################################################################################
@@ -71,6 +75,7 @@ class Container(Widget):
     def draw(self):
         """Draw the window"""
         super().draw()
+        self._window.erase()
         for widget in self.children_widgets():
             widget.draw()
 

@@ -49,14 +49,10 @@ class Widget(WidgetLayout):
         return self.root_ui.widget_tree
 
     ###################################################################################
-    def debug(self, msg: str):
-        """Debug log"""
-        with open("/tmp/widget_err", "a", encoding="utf-8") as outfh:
-            outfh.write(f"{repr(self)}: {msg}\n")
-
-    ###################################################################################
     def enclose(self, y: int, x: int) -> bool:
         """Is the coord in our window?"""
+        if not self._window:
+            self.debug(f"{self=}\n{self.root_ui.widget_tree.show(stdout=False)}")
         return self._window.enclose(y, x)
 
     ###################################################################################
@@ -79,6 +75,8 @@ class Widget(WidgetLayout):
     ###################################################################################
     def draw(self) -> None:
         """Draw the Widget"""
+        if not self._laid_out:
+            self.layout()
         if self._border_window:
             if self.focus:
                 self._border_window.border(0, 0, 0, 0, "*")
@@ -88,9 +86,11 @@ class Widget(WidgetLayout):
     ###################################################################################
     def handle_keyboard_input(self, key: Keys) -> bool:
         """Handle character input - return if event handled"""
+        self.debug(f"handle_keyboard_input({key=}) {self.bindings}")
         if key in self.bindings:
             self.bindings[key]()
             return True
+        self.debug(f"Not handled: {self.bindings}")
         return False
 
     ###################################################################################

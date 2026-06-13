@@ -1,6 +1,7 @@
 """Button Bar"""
 
 from pyemp.lib_curses import ButtonBox, Button
+from .desig_window import Desig_Window
 
 
 #######################################################################################
@@ -18,6 +19,8 @@ class ButtonBar(ButtonBox):
     ###################################################################################
     def layout(self):
         """Layout the buttons"""
+        if self._laid_out:
+            return
         self.add(Button(label="Designate", callback=self.desig_callback))
         self.add(Button(label="Threshold", callback=self.thresh_callback))
         super().layout()
@@ -26,7 +29,11 @@ class ButtonBar(ButtonBox):
     def desig_callback(self):
         """Someone clicked the Desig button"""
         self.game.log("Desig Callback")
-        # dw = Desig_Window(self.x, self.y, self.stdscr, 40, 80, 4, 4)
+        dw = Desig_Window(self.game.x, self.game.y)
+        self.game.base_window.add(dw)
+        self.debug(f"Added desig {dw} {dw._parent_window=}")
+        self.root_ui.focus_on_widget(dw)
+
         # dw.mainloop()
         # if new_desig := dw.get():
         #     cmd_desig(self.sock, self.x, self.y, new_desig)

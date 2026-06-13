@@ -50,7 +50,7 @@ class Dialog(Window):
             TextViewer(text=msg, border=False), f"dialog_{self.name}_text"
         )
         self.buttonbox = self.add(
-            ButtonBox(begin_y=2 + len(msg), border=False, modal_focus=True),
+            ButtonBox(begin_y=1 + len(msg), border=False, modal_focus=True),
             f"dialog_{self.name}_buttons",
         )
         for button in self.buttons:
@@ -71,12 +71,6 @@ class Dialog(Window):
     def required_height(self) -> int:
         """Required height of dialog"""
         return self.textviewer.required_height + self.buttonbox.required_height + 2
-
-    ###################################################################################
-    def draw(self):
-        """Draw the dialog"""
-        self._window.erase()
-        super().draw()
 
     ###################################################################################
     def get(self) -> Optional[str]:

@@ -78,6 +78,7 @@ class UI(Widget):
         """Layout the objects"""
         self.which_widget_has_focus()  # Assign focus if none
         for widget in self.child_windows():
+            self.debug(f"Layout for {widget=}")
             widget.layout()
 
     ###################################################################################
@@ -181,6 +182,7 @@ class UI(Widget):
         for widget in self.child_windows():
             widget.draw()
         curses.doupdate()
+        self.stdscr.refresh()
 
     ###################################################################################
     def update_callbacks(self):
@@ -194,10 +196,10 @@ class UI(Widget):
     def mainloop(self):
         """Event loop for curses"""
         while True:
-            self.layout()
-            self.update_callbacks()
             self.draw()
+            self.update_callbacks()
             self.handle_input()
+            self.debug(f"{self=}\n{self._widget_tree.show(stdout=False)}")
 
     ###################################################################################
     def handle_input(self):
@@ -228,7 +230,9 @@ class UI(Widget):
     ###################################################################################
     def handle_key_input(self, key: Keys):
         """Handle keyboard input for all widgets"""
+        self.debug(f"handle_key_input({key=})")
         if widget := self.which_widget_has_focus():
+            self.debug(f"Focussed on {widget}")
             if widget.handle_keyboard_input(key):
                 return
             while self.widget_tree.parent(widget.node_id):

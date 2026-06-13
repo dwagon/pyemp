@@ -40,12 +40,18 @@ class Listbox(Widget):
     ###################################################################################
     def option_prev(self) -> None:
         """Previous option"""
+        if not self._selected:
+            self._selected = 0
         self._selected = max(0, self._selected - 1)
+        self.debug(f"option_prev() -> {self._selected}")
 
     ###################################################################################
     def option_next(self) -> None:
         """Next option"""
+        if not self._selected:
+            self._selected = 0
         self._selected = min(len(self.entries) - 1, self._selected + 1)
+        self.debug(f"option_next() -> {self._selected}")
 
     ###################################################################################
     def option_select(self) -> None:

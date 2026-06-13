@@ -2,7 +2,7 @@
 
 import tabulate
 
-from pyemp.lib_curses import Container, Label, TextViewer, FitType
+from pyemp.lib_curses import Window, Label, TextViewer, FitType
 from pyemp.map_data import MapData
 from pyemp.sector import Sector, desig_name
 
@@ -10,7 +10,7 @@ from pyemp.sector import Sector, desig_name
 #######################################################################################
 #######################################################################################
 #######################################################################################
-class DataWindow(Container):
+class DataWindow(Window):
     """Window for displaying data"""
 
     def __init__(self, game, **kwargs):
@@ -66,7 +66,7 @@ class DataWindow(Container):
 
         self.resource_label.set_text(
             f"Resource: Iron: {m.min}, Gold: {m.gold}, "
-            f"Fert: {m.fert}, Oil: {m.ocontent}, Uranium {m.uran}"
+            f"Fert: {m.fert}, Oil: {m.ocontent}, Uranium: {m.uran}"
         )
         table = distribution_details_table(m).splitlines()
         self.details.set_text(table)

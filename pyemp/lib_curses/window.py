@@ -1,5 +1,7 @@
 """Window"""
 
+import curses
+
 from .widget import FitType
 from .container import Container
 
@@ -15,15 +17,16 @@ class Window(Container):
         self.fit = kwargs.get("fit", FitType.MAX_FIT)
         super().__init__(**kwargs)
 
+    ###################################################################################
     def layout(self):
         """Layout the window"""
         if self.centered:
-            if not self.width:
-                self.width = self.avail_width()
-            if not self.height:
-                self.height = self.avail_height()
-            self.begin_x = (self.avail_width() - self.width) // 2
-            self.begin_y = (self.avail_height() - self.height) // 2
+            width = self.width if self.width else 1
+            height = self.height if self.height else 1
+            self.begin_x = (curses.COLS - width) // 2  # pylint: disable=no-member
+            self.begin_y = (curses.LINES - height) // 2  # pylint: disable=no-member
+            self.debug(f"{width=} {self.begin_x=} {curses.COLS=}")
+            self.debug(f"{height=} {self.begin_y=} {curses.LINES=}")
         super().layout()
 
 

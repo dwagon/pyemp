@@ -48,6 +48,7 @@ class Button(Widget):
     ###################################################################################
     def pressed(self):
         """Button has been pressed / selected"""
+        self.debug("Pressed")
         self.selected = not self.selected
         # Tell parent (if buttonbox) that we were pressed
         if hasattr(self.widget_tree.parent(self.node_id).data, "button_pressed"):
