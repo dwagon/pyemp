@@ -18,6 +18,7 @@ class Desig_Window(Window):
             border=True,
             fit=FitType.MIN_FIT,
             bindings={Keys.KEY_ENTER: self.close},
+            debug=True,
         )
         self.new_desig: str = ""
         self.x = x
@@ -36,9 +37,11 @@ class Desig_Window(Window):
         self.add(self.listbox)
         self.width = self.required_width
         self.height = self.required_height
-        self.add(Button(label="Cancel", begin_y=len(dopts) + 3, callback=None))
+        self.add(Button(label="Cancel", begin_y=len(dopts) + 3, callback=self.close))
         self.add(
-            Button(label="Designate", begin_y=len(dopts) + 3, begin_x=15, callback=None)
+            Button(
+                label="Designate", begin_y=len(dopts) + 3, begin_x=15, callback=self.get
+            )
         )
         self.root_ui.focus_on_widget(self.listbox)
         super().layout()
@@ -59,11 +62,14 @@ class Desig_Window(Window):
     ###################################################################################
     def get(self) -> Optional[str]:
         """Return result"""
-        return self.new_desig
+        self.new_desig = self.listbox.get()
+        self.debug(f"{self.new_desig}")
+        self.root_ui.delete(self)
 
     ###################################################################################
     def close(self) -> None:
         """User has made the selection"""
+        self.debug("No result")
         self.root_ui.delete(self)
 
 

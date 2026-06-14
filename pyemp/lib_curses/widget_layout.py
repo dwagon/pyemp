@@ -30,6 +30,7 @@ class WidgetLayout:
         self.height: Optional[int] = kwargs.get("height", None)
         self.width: Optional[int] = kwargs.get("width", None)
         self.border = kwargs.get("border", False)
+        self.debugFlag = kwargs.get("debug", False)
         self.fit = kwargs.get("fit", FitType.MAX_FIT)
 
         self._parent_window = None
@@ -172,6 +173,8 @@ class WidgetLayout:
     ###################################################################################
     def debug(self, msg: str):
         """Debug log"""
+        if not self.debugFlag:
+            return
         with open("/tmp/widget_err", "a", encoding="utf-8") as outfh:
             outfh.write(f"{repr(self)}: {msg}\n")
 
