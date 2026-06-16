@@ -12,10 +12,10 @@ class TextViewer(Widget):
     """Text Viewer Widget"""
 
     def __init__(self, **kwargs: Any):
-        super().__init__(**kwargs)
         self.text: list[str] = kwargs.get("text", [])
-        self.fit = kwargs.get("fit", FitType.MIN_FIT)
-        self.focusable = False
+        kwargs["fit"] = kwargs.get("fit", FitType.MIN_FIT)
+        kwargs["focusable"] = kwargs.get("focusable", False)
+        super().__init__(**kwargs)
 
     ###################################################################################
     def set_text(self, text: list[str]):
@@ -41,7 +41,7 @@ class TextViewer(Widget):
     def required_height(self) -> int:
         if not self.text:
             return 1
-        return len(self.text) + 1
+        return len(self.text)
 
 
 # EOF

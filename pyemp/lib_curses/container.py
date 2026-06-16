@@ -40,7 +40,9 @@ class Container(Widget):
     ###################################################################################
     def add(self, widget: Widget, name: str = "") -> Widget:
         """Add a widget to the container"""
-        self.root_ui.add(widget, name, parent=self.node_id)
+        self.debug(f"add({widget=}, {name=})", force=True)
+        if self.root_ui:
+            self.root_ui.add(widget, name, parent=self.node_id)
         return widget
 
     ###################################################################################

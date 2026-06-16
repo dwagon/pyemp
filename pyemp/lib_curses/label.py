@@ -12,16 +12,16 @@ class Label(Widget):
     """Label Widget"""
 
     def __init__(self, **kwargs: Any):
-        super().__init__(**kwargs)
         self.text = kwargs.get("text", "")
-        self.focusable = False
-        self.fit = kwargs.get("fit", FitType.MIN_FIT)
+        kwargs["fit"] = kwargs.get("fit", FitType.MIN_FIT)
+        kwargs["focusable"] = kwargs.get("focusable", False)
+        super().__init__(**kwargs)
 
     ###################################################################################
     def draw(self):
         """Draw the label"""
-        super().draw()
         self._window.addstr(0, 0, self.text)
+        super().draw()
 
     ###################################################################################
     def set_text(self, text: str):

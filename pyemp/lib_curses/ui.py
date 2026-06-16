@@ -156,6 +156,7 @@ class UI(Widget):
         if not name:
             name = widget.assign_name()
         widget.name = name
+        self.debug(f"add({widget=}, {name=}", force=True)
         if parent is None:
             parent = ROOT_ID
         widget.root_ui = self

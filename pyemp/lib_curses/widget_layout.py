@@ -27,6 +27,14 @@ class WidgetLayout:
         self._laid_out = False
         self.begin_y = kwargs.get("begin_y", 0)
         self.begin_x = kwargs.get("begin_x", 0)
+
+        # Leave a user defined bit of space around the edge
+        self.pad = kwargs.get("pad", 0)  # All over padding
+        self.pad_top = kwargs.get("pad_top", self.pad)
+        self.pad_bottom = kwargs.get("pad_bottom", self.pad)
+        self.pad_left = kwargs.get("pad_left", self.pad)
+        self.pad_right = kwargs.get("pad_right", self.pad)
+
         self.height: Optional[int] = kwargs.get("height", None)
         self.width: Optional[int] = kwargs.get("width", None)
         self.border = kwargs.get("border", False)
@@ -51,38 +59,37 @@ class WidgetLayout:
     ###################################################################################
     def layout_window(self) -> None:
         """Layout the non-border window"""
-        begin_x = self.begin_x
-        begin_y = self.begin_y
+        begin_x = 0
+        begin_y = 0
         if self._border_window:
             begin_y = 1
             begin_x = 1
+        else:
+            begin_x = self.begin_x
+            begin_y = self.begin_y
         requested_size = Dimension(self.height, self.width, begin_y, begin_x)
         size = self.calc_window_size(requested_size, border_win=False)
 
         if self._border_window:
-            self.debug(
-                f"derwinA(height={size.height}, width={size.width}, "
-                f"begin_y={size.begin_y}, begin_x={size.begin_x})"
-            )
-            self._window = self._border_window.derwin(
-                size.height, size.width, size.begin_y, size.begin_x
-            )
+            parent_win = self._border_window
         else:
-            self.debug(
-                f"derwinB(height={size.height}, width={size.width}, "
-                f"begin_y={size.begin_y}, begin_x={size.begin_x})"
-            )
-            self._window = self._parent_window.derwin(
-                size.height, size.width, size.begin_y, size.begin_x
-            )
-            self.width = size.width
-            self.height = size.height
-            self.debug(f"Setting {self.width=} and {self.height=}")
+            parent_win = self._parent_window
+        self.debug(
+            f"derwin(height={size.height}, width={size.width}, "
+            f"begin_y={size.begin_y}, begin_x={size.begin_x})"
+        )
+        self._window = parent_win.derwin(
+            size.height, size.width, size.begin_y, size.begin_x
+        )
+        self.width = size.width
+        self.height = size.height
+        self.debug(f"Setting {self.width=} and {self.height=}")
 
     ###################################################################################
     def layout_border_window(self):
         """If there is a border then lay it out as a new window"""
         size = Dimension(self.height, self.width, self.begin_y, self.begin_x)
+
         win_size = self.calc_window_size(size, border_win=True)
         self.debug(
             f"border(height={win_size.height}, width={win_size.width}, "
@@ -95,12 +102,15 @@ class WidgetLayout:
     ###################################################################################
     def calc_window_size(self, dimension: Dimension, border_win=False) -> Dimension:
         """How big the inner canvas should be based on the borders"""
-
+        self.debug(f"calc_window_size({dimension})")
         height, width, begin_y, begin_x = dimension
+        if border_win and not self._border_window:
+            begin_y += self.pad_top
+            begin_x += self.pad_left
         height = self.calculate_height(dimension, border_win)
         width = self.calculate_width(dimension, border_win)
         ans = Dimension(height, width, begin_y, begin_x)
-        self.debug(f"calc_window_size() = {ans}")
+        self.debug(f"calc_window_size() = {ans}", force=True)
         return ans
 
     ###################################################################################
@@ -112,12 +122,14 @@ class WidgetLayout:
                 height -= 2
             self.debug(f"calc_height() {height=}")
             return height
-        max_h = self.avail_height() - requested.begin_y
-        min_h = self.required_height
+        max_h = self.avail_height() - requested.begin_y - self.pad_top - self.pad_bottom
+        min_h = self.required_height + self.pad_top + self.pad_bottom
+        if self.border and not border_win:
+            max_h -= 2
         if self.border and border_win:
             min_h += 2
         height = max_h if self.fit == FitType.MAX_FIT else min_h
-        self.debug(f"calc_height() {min_h=} {max_h=} {height=}")
+        self.debug(f"calc_height() {requested=} {min_h=} {max_h=} {height=}")
         return height
 
     ###################################################################################
@@ -129,8 +141,10 @@ class WidgetLayout:
                 width -= 2
                 self.debug(f"calc_width() {width=}")
             return width
-        max_w = self.avail_width() - requested.begin_x
-        min_w = self.required_width
+        max_w = self.avail_width() - requested.begin_x - self.pad_left - self.pad_right
+        min_w = self.required_width + self.pad_left + self.pad_right
+        if self.border and not border_win:
+            max_w -= 2
         if self.border and border_win:
             min_w += 2
         width = max_w if self.fit == FitType.MAX_FIT else min_w
