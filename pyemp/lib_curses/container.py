@@ -40,15 +40,7 @@ class Container(Widget):
     ###################################################################################
     def add(self, widget: Widget, name: str = "") -> Widget:
         """Add a widget to the container"""
-        name = widget.name if widget.name else name
-        if not name:
-            name = widget.assign_name()
-        widget.name = name
-
-        widget.root_ui = self.root_ui
-        node = self.widget_tree.create_node(tag=name, data=widget, parent=self.node_id)
-        widget.node_id = node.identifier
-        widget.set_parent(self._window)
+        self.root_ui.add(widget, name, parent=self.node_id)
         return widget
 
     ###################################################################################

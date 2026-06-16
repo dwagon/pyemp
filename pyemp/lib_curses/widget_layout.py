@@ -171,9 +171,9 @@ class WidgetLayout:
         raise NotImplementedError
 
     ###################################################################################
-    def debug(self, msg: str):
+    def debug(self, msg: str, force: bool = False):
         """Debug log"""
-        if not self.debugFlag:
+        if not self.debugFlag and not force:
             return
         with open("/tmp/widget_err", "a", encoding="utf-8") as outfh:
             outfh.write(f"{repr(self)}: {msg}\n")

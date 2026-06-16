@@ -86,7 +86,7 @@ class Widget(WidgetLayout):
     ###################################################################################
     def handle_keyboard_input(self, key: Keys) -> bool:
         """Handle character input - return if event handled"""
-        self.debug(f"handle_keyboard_input({key=}) {self.bindings}")
+        # self.debug(f"handle_keyboard_input({key=}) {self.bindings}")
         if key in self.bindings:
             self.bindings[key]()
             return True

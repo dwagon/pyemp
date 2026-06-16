@@ -78,7 +78,6 @@ class UI(Widget):
         """Layout the objects"""
         self.which_widget_has_focus()  # Assign focus if none
         for widget in self.child_windows():
-            self.debug(f"Layout for {widget=}")
             widget.layout()
 
     ###################################################################################
@@ -90,7 +89,6 @@ class UI(Widget):
             widget.focus = False
         focus_widget.focus = True
         focus_widget.gainFocus()
-        self.debug(f"focus_on_widget({focus_widget=})")
 
     ###################################################################################
     def which_widget_has_focus(self) -> Optional[Widget]:
@@ -152,28 +150,37 @@ class UI(Widget):
         return list(_.data for _ in self.widget_tree.children(ROOT_ID))
 
     ###################################################################################
-    def add(self, widget: Widget, name: str = "") -> Widget:
+    def add(self, widget: Widget, name: str = "", parent=None) -> Widget:
         """Add a widget to the screen"""
         name = widget.name if widget.name else name
         if not name:
             name = widget.assign_name()
         widget.name = name
+        if parent is None:
+            parent = ROOT_ID
         widget.root_ui = self
-        node = self.widget_tree.create_node(tag=name, data=widget, parent=ROOT_ID)
+        node = self.widget_tree.create_node(tag=name, data=widget, parent=parent)
         widget.node_id = node.identifier
         widget.set_parent(self.root_window)
+        self.debug(f"add({widget})")
+        if widget.modal_focus:
+            self.modal_focus_widget = widget
+            self.focus_on_widget(widget)
         return widget
 
     ###################################################################################
     def delete(self, widget: Widget) -> None:
         """Delete a widget and all its children"""
+        refocus = False
         subtree = self.widget_tree.remove_subtree(nid=widget.node_id)
         for node in subtree.all_nodes():
             widg = cast(Widget, node.data)
             if widg.focus:
-                if widg.modal_focus:
-                    self.modal_focus_widget = None
-                self.focus_on_widget(self.all_focusable_widgets()[0])  # Make cleverer
+                refocus = True
+            if self.modal_focus_widget == widget:
+                self.modal_focus_widget = None
+        if refocus:
+            self.focus_on_widget(self.all_focusable_widgets()[0])  # Make cleverer
 
     ###################################################################################
     def draw(self):
@@ -199,7 +206,6 @@ class UI(Widget):
             self.draw()
             self.update_callbacks()
             self.handle_input()
-            self.debug(f"{self=}\n{self._widget_tree.show(stdout=False)}")
 
     ###################################################################################
     def handle_input(self):
@@ -230,9 +236,7 @@ class UI(Widget):
     ###################################################################################
     def handle_key_input(self, key: Keys):
         """Handle keyboard input for all widgets"""
-        self.debug(f"handle_key_input({key=})")
         if widget := self.which_widget_has_focus():
-            self.debug(f"Focussed on {widget}")
             if widget.handle_keyboard_input(key):
                 return
             while self.widget_tree.parent(widget.node_id):

@@ -63,7 +63,7 @@ class Desig_Window(Window):
     def get(self) -> Optional[str]:
         """Return result"""
         self.new_desig = self.listbox.get()
-        self.debug(f"{self.new_desig}")
+        self.debug(f"new desig = {self.new_desig}")
         self.root_ui.delete(self)
 
     ###################################################################################

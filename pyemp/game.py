@@ -20,7 +20,7 @@ class Game:
     """Game Object"""
 
     def __init__(self, config: dict[str, int | str], stdscr: curses.window):
-        self.ui = UI(stdscr)
+        self.ui = UI(stdscr, debug=True)
 
         self.config = config
         self.map = MapData()
